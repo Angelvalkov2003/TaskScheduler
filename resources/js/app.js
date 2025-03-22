@@ -8,11 +8,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const themeToggle = document.getElementById("theme-toggle"); // Бутон за превключване
     const htmlElement = document.documentElement; // <html> елемента
 
-    // Проверяваме дали има запазена тема в LocalStorage
-    if (localStorage.getItem("theme") === "light") {
-        htmlElement.setAttribute("data-bs-theme", "light");
-    }
+    // Проверяваме дали има запазена тема в LocalStorage и я прилагаме
+    const savedTheme = localStorage.getItem("theme") || "light"; // Ако няма записана тема, използваме "light"
+    htmlElement.setAttribute("data-bs-theme", savedTheme);
 
+    // Добавяме събитие за смяна на темата
     themeToggle.addEventListener("click", function () {
         let currentTheme = htmlElement.getAttribute("data-bs-theme");
 
