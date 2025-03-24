@@ -11,9 +11,9 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SurveyApiServiceTest extends TestCase
 {
-    protected string $validApiKey = '*';
-    protected string $baseUrl = '*';
-    protected string $projectPath = '*';
+    protected string $validApiKey = 'r5w715v9vnhmcqshr6m0d44p9knt38qa99wyfuchx4mjcqdg8ybc2wz4tgd09e56';
+    protected string $baseUrl = 'https://gmidev.decipherinc.com';
+    protected string $projectPath = 'bor/training/v3/avalkov/FinalTest';
 
     #[Test]
     public function it_returns_survey_data_successfully()
