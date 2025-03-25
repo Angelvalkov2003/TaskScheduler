@@ -72,12 +72,10 @@ class SurveyApiService
 
     public function getSurveyLayouts(string $projectPath)
     {
-        $layouts = $this->request("{$projectPath}/layouts");
+        $queryParams = ['select' => 'id,description'];
+        $layouts = $this->request("{$projectPath}/layouts", $queryParams);
 
-        return collect($layouts)->map(fn($layout) => [
-            'id' => $layout['id'] ?? null,
-            'description' => $layout['description'] ?? null,
-        ])->all();
+        return $layouts;
     }
 
 

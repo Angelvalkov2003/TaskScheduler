@@ -45,66 +45,67 @@ class SurveyApiServiceTest extends TestCase
         $service->getSurveyData($this->projectPath);
     }
 
+
+    /*
+        #[Test]
+        public function it_fetches_real_survey_data()
+        {
+            $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
+            $response = $service->getSurveyData('bor/training/v3/avalkov/JustEat', "json", 20309);
+
+            dd($response); // View the actual API response
+        }*/
+
     /*
 
-    #[Test]
-    public function it_fetches_real_survey_data()
-    {
-        $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
-        $response = $service->getSurveyData('bor/training/v3/avalkov/JustEat', "json", 20309);
-
-        dd($response); // View the actual API response
-    }
+#[Test]
+public function it_fetches_real_survey_layouts()
+{
+    $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
+    $response = $service->getSurveyLayouts('bor/training/v3/avalkov/JustEat');
 
 
-    #[Test]
-    public function it_fetches_real_survey_layouts()
-    {
-        $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
-        $response = $service->getSurveyLayouts('bor/training/v3/avalkov/JustEat');
+    dd($response); // View the actual API response
+}
+*/
 
+    /*
+        #[Test]
+        public function async_it_fetches_real_survey_data()
+        {
+            $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
 
-        dd($response); // View the actual API response
-    }*/
+            $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', 'json', 20309);
+            $taskId = $task['ident'] ?? null;
 
-
-
-    #[Test]
-    public function async_it_fetches_real_survey_data()
-    {
-        $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
-
-        $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', 'json', 20309);
-        $taskId = $task['ident'] ?? null;
-
-        if (!$taskId) {
-            $this->fail('Failed to start async task, no task ID received.');
-        }
-
-        $maxAttempts = 30;
-        $attempts = 0;
-        $startTime = microtime(true); // Get the start time in microseconds
-
-        do {
-            usleep(100_000); // Sleep for 100 milliseconds (0.1 seconds)
-            $status = $service->getTaskStatus($taskId);
-            $attempts++;
-
-            if ($attempts >= $maxAttempts) {
-                $this->fail("Timeout: Async task $taskId took too long to finish.");
+            if (!$taskId) {
+                $this->fail('Failed to start async task, no task ID received.');
             }
 
-        } while ($status !== 'finished');
+            $maxAttempts = 30;
+            $attempts = 0;
+            $startTime = microtime(true); // Get the start time in microseconds
 
-        $endTime = microtime(true); // Get the end time in microseconds
-        $elapsedTime = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
+            do {
+                usleep(100_000); // Sleep for 100 milliseconds (0.1 seconds)
+                $status = $service->getTaskStatus($taskId);
+                $attempts++;
 
-        echo "\nTask {$taskId} completed in {$elapsedTime} ms.\n";
+                if ($attempts >= $maxAttempts) {
+                    $this->fail("Timeout: Async task $taskId took too long to finish.");
+                }
 
-        $result = $service->getTaskResult($taskId);
+            } while ($status !== 'finished');
 
-        dd($result);
-    }
+            $endTime = microtime(true); // Get the end time in microseconds
+            $elapsedTime = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
+
+            echo "\nTask {$taskId} completed in {$elapsedTime} ms.\n";
+
+            $result = $service->getTaskResult($taskId);
+
+            dd($result);
+        }*/
 
 
 
