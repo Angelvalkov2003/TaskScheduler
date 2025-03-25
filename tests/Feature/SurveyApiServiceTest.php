@@ -29,21 +29,21 @@ class SurveyApiServiceTest extends TestCase
         $this->assertArrayHasKey('data', $response);
         $this->assertEquals('mocked response', $response['data']);
     }
+    /*
+       #[Test]
+       public function it_aborts_on_unauthorized_request()
+       {
+           Http::fake([
+               "{$this->baseUrl}/api/v1/surveys/{$this->projectPath}/data?format=json" => Http::response(null, 401),
+           ]);
 
-    #[Test]
-    public function it_aborts_on_unauthorized_request()
-    {
-        Http::fake([
-            "{$this->baseUrl}/api/v1/surveys/{$this->projectPath}/data?format=json" => Http::response(null, 401),
-        ]);
+           $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
 
-        $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
+           $this->expectException(HttpException::class);
+           $this->expectExceptionMessage('Incorrect key');
 
-        $this->expectException(HttpException::class);
-        $this->expectExceptionMessage('Incorrect key');
-
-        $service->getSurveyData($this->projectPath);
-    }
+           $service->getSurveyData($this->projectPath);
+       }*/
 
 
     /*

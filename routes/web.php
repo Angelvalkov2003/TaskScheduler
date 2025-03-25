@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DecipherExportController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -24,4 +25,5 @@ Route::middleware(['auth'])->group(function () {
 
 
 Route::get('/index', [TaskController::class, 'index'])->name('tasks.index');
-Route::get('/createDecipherTask', [TaskController::class, 'createDecipherTask'])->name('tasks.createDecipherTask');
+Route::get('/createDecipherTask', [DecipherExportController::class, 'createDecipherTask'])->name('decipherExport.createDecipherTask');
+Route::post('/decipherExport', [DecipherExportController::class, 'store'])->name('decipherExport.store');

@@ -9,7 +9,7 @@
                     New Task
                 </button>
                 <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="{{ route('tasks.createDecipherTask') }}">Decipher Auto Export</a></li>
+                    <li><a class="dropdown-item" href="{{ route('decipherExport.createDecipherTask') }}">Decipher Auto Export</a></li>
                     <li><a class="dropdown-item" href="#">Confirmit Auto Export</a></li>
                     <li><a class="dropdown-item" href="#">Task 3</a></li>
                 </ul>

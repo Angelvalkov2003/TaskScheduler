@@ -11,9 +11,4 @@ class TaskController extends Controller
         return view('tasks.index', []);
     }
 
-    public function createDecipherTask()
-    {
-
-        return view('tasks.createDecipherTask', []);
-    }
 }
