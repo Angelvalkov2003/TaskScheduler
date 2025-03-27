@@ -22,11 +22,11 @@ class DecipherExportController extends Controller
 
     public function store(Request $request)
     {
-        // Format the surver and the path
+        // Format the sеrver and the path
         $fullSurveyUrl = $request->input('survey_path');
         $parsedUrl = parse_url($fullSurveyUrl);
-        $server = $parsedUrl['scheme'] . '://' . $parsedUrl['host']; // Base URL
-        $surveyPath = ltrim($parsedUrl['path'], '/survey/'); // Remove leading '/survey/' to get the path only
+        $server = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
+        $surveyPath = ltrim($parsedUrl['path'], '/survey/');
 
         // Set up task data
         $taskData = $request->only([
