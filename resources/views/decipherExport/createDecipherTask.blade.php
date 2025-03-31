@@ -98,11 +98,11 @@
                                                 <div class="mb-3">
                                                     <label class="form-label" for="repeat">Repeat:</label>
                                                     <select class="form-select" id="repeat" name="repeat">
-                                                        <option value="daily_twice">Every day at 9am and 9pm (GMT)</option>
-                                                        <option value="daily_once">Every day at 9am (GMT)</option>
-                                                        <option value="every_3_days">Every 3rd day at 9am (GMT)</option>
-                                                        <option value="weekly">Every Monday at 9am (GMT)</option>
-                                                        <option value="open">Open</option>
+                                                        <option value="* * * * *">Every minute</option>
+                                                        <option value="0 9 * * *">Every day at 9am (GMT)</option>
+                                                        <option value="0 9,21 * * *">Every day at 9am and 9pm (GMT)</option>
+                                                        <option value="0 9 */3 * *">Every 3rd day at 9am (GMT)</option>
+                                                        <option value="0 9 * * 1">Every Monday at 9am (GMT)</option>                                                        
                                                     </select>
                                                 </div>
                                             </div>
