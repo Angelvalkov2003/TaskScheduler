@@ -44,7 +44,7 @@ class ProcessTaskJob implements ShouldQueue
             return;
         }
 
-        // Ако е приключила, взимаме резултатите
+        // взимаме данните
         $result = $service->getTaskResult($this->ident);
 
         // Логваме резултатите (можеш да ги запишеш в база)

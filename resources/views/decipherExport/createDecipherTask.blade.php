@@ -86,7 +86,7 @@
                                             <div class="card-body">
                                                 <div class="mb-3">
                                                     <label class="form-label">Emails to receive:</label>
-                                                    <textarea class="form-control" name="emails" placeholder="JohnJones@gmail.com, AlexPereira@kantar.com, ..." required></textarea>
+                                                    <textarea class="form-control" name="emails" placeholder="JonJones@gmail.com, AlexPereira@kantar.com, ..." required></textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -99,8 +99,8 @@
                                                     <label class="form-label" for="repeat">Repeat:</label>
                                                     <select class="form-select" id="repeat" name="repeat">
                                                         <option value="* * * * *">Every minute</option>
-                                                        <option value="0 9 * * *">Every day at 9am (GMT)</option>
                                                         <option value="0 9,21 * * *">Every day at 9am and 9pm (GMT)</option>
+                                                        <option value="0 9 * * *">Every day at 9am (GMT)</option>
                                                         <option value="0 9 */3 * *">Every 3rd day at 9am (GMT)</option>
                                                         <option value="0 9 * * 1">Every Monday at 9am (GMT)</option>                                                        
                                                     </select>

@@ -17,11 +17,15 @@
           {{ session('success') }}
       </div>
   @endif
-  @if (session('error'))
-      <div id="flash" class="p-4 text-center bg-red-50 text-red-500 font-bold">
-          {{ session('error') }}
-      </div>
-  @endif
+  @if ($errors->any())
+  <div id="flash" class="p-4 text-center bg-red-50 text-red-500 font-bold">
+      <ul>
+          @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+          @endforeach
+      </ul>
+  </div>
+@endif
 
   <header class="navbar navbar-expand-md d-print-none">
     <div class="container py-2 d-flex justify-content-between align-items-center">
