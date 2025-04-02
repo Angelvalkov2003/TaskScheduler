@@ -8,6 +8,7 @@ use Tests\TestCase;
 use App\Services\SurveyApiService;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Facades\Storage;
 
 class SurveyApiServiceTest extends TestCase
 {
@@ -69,44 +70,67 @@ public function it_fetches_real_survey_layouts()
 }
 */
 
-    /*
-        #[Test]
-        public function async_it_fetches_real_survey_data()
-        {
-            $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
 
-            $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', 'json', 20309);
-            $taskId = $task['ident'] ?? null;
+    #[Test]
+    public function async_it_fetches_real_survey_data()
+    {
+        $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
 
-            if (!$taskId) {
-                $this->fail('Failed to start async task, no task ID received.');
+        // Старт на задачата, в случая за SPSS 16
+        $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', 'spss16');  // или 'csv', 'json', и др.
+        $taskId = $task['ident'] ?? null;
+
+        if (!$taskId) {
+            $this->fail('Failed to start async task, no task ID received.');
+        }
+
+        $maxAttempts = 30;
+        $attempts = 0;
+        $startTime = microtime(true);
+
+        do {
+            usleep(100_000); // Sleep for 100 milliseconds (0.1 seconds)
+            $status = $service->getTaskStatus($taskId);
+            $attempts++;
+
+            if ($attempts >= $maxAttempts) {
+                $this->fail("Timeout: Async task $taskId took too long to finish.");
             }
 
-            $maxAttempts = 30;
-            $attempts = 0;
-            $startTime = microtime(true); // Get the start time in microseconds
+        } while ($status !== 'finished');
 
-            do {
-                usleep(100_000); // Sleep for 100 milliseconds (0.1 seconds)
-                $status = $service->getTaskStatus($taskId);
-                $attempts++;
+        $endTime = microtime(true);
+        $elapsedTime = round(($endTime - $startTime) * 1000, 2);
 
-                if ($attempts >= $maxAttempts) {
-                    $this->fail("Timeout: Async task $taskId took too long to finish.");
-                }
+        echo "\nTask {$taskId} completed in {$elapsedTime} ms.\n";
 
-            } while ($status !== 'finished');
+        // Вземаме резултата от задачата (може да е SPSS, CSV, JSON и т.н.)
+        $fileData = $service->getTaskResult($taskId);
 
-            $endTime = microtime(true); // Get the end time in microseconds
-            $elapsedTime = round(($endTime - $startTime) * 1000, 2); // Convert to milliseconds
+        // Проверка дали данните са архивирани (например SPSS .zip файл)
+        if (strpos($fileData, 'PK') === 0) {  // 'PK' е началото на ZIP файловете
+            // Това означава, че данните са архивирани (ZIP файл)
+            $fileExtension = 'zip';
+        } else {
+            // В противен случай, предполагаме CSV формат
+            $fileExtension = 'csv';
+        }
 
-            echo "\nTask {$taskId} completed in {$elapsedTime} ms.\n";
+        // Определяне на пътя към файла с правилното разширение
+        $filePath = "private/surveys/survey_{$taskId}.{$fileExtension}";
 
-            $result = $service->getTaskResult($taskId);
+        // Записваме файла в local storage
+        Storage::disk('local')->put($filePath, $fileData);
 
-            dd($result);
-        }*/
+        // Проверка дали файлът е записан успешно
+        if (Storage::disk('local')->exists($filePath)) {
+            echo "\nFile saved successfully: $filePath\n";
+        } else {
+            $this->fail("Failed to save file.");
+        }
 
+        dd($fileData);  // За да покажете данните от файла и да видите дали са архивирани или не
+    }
 
 
 

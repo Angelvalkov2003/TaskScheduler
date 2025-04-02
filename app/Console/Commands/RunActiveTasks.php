@@ -41,14 +41,14 @@ class RunActiveTasks extends Command
 
                 if ($surveyPath && $server) {
                     $service = new SurveyApiService($server, $apiKey);
-                    $taskResponse = $service->startAsyncSurveyDataExport($surveyPath);//добави ,$format,$layout
+                    $taskResponse = $service->startAsyncSurveyDataExport($surveyPath, $format);//добави ,$format,$layout
                     $ident = $taskResponse['ident'] ?? null; //ключът който получаваме от АПИто за следващи проверки
 
                     if (!$ident) {
                         $this->error("Failed to start async task for task ID {$task->id}, no task ID received.");
                     } else {
                         $this->info("Successfully started async task for task ID {$task->id}. Task ID: {$ident}");
-                        ProcessTaskJob::dispatch($ident, $server, $apiKey);
+                        ProcessTaskJob::dispatch($ident, $server, $apiKey, $format);
                     }
                 } else {
                     $this->error("Missing required settings for task ID {$task->id}.");

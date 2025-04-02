@@ -31,8 +31,8 @@
                                                 <div class="mb-3">
                                                     <label class="form-label">Formats:</label>
                                                     <select class="form-select" name="format">
-                                                        <option value="xlsx">Excel</option>
-                                                        <option value="spss">SPSS</option>
+                                                        <option value="csv">Excel</option>
+                                                        <option value="spss16">SPSS</option>
                                                         <option value="tripleS">Triple-S</option>
                                                         <option value="json">JSON</option>
                                                     </select>
