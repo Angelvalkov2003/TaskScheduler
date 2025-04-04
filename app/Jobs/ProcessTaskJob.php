@@ -50,15 +50,10 @@ class ProcessTaskJob implements ShouldQueue
         // взимаме данните
         $result = $service->getTaskResult($this->ident);
 
-        // Ensure the result is in JSON format if the format is 'json'
+        // Formats the json file
         if ($this->format === 'json') {
-            if (is_string($result) && json_decode($result) !== null) {
-            } else {
+            if (is_array($result)) {
                 $result = json_encode($result, JSON_PRETTY_PRINT);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    \Log::error("Failed to encode result to JSON: " . json_last_error_msg());
-                    return;
-                }
             }
         }
 
@@ -70,7 +65,6 @@ class ProcessTaskJob implements ShouldQueue
             default => 'txt',  // Default to text file
         };
 
-        // Define the file path
         $filePath = "private/surveys/survey_{$this->ident}.{$fileExtension}";
 
         // Save the result to local storage
