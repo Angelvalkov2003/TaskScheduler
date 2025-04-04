@@ -30,6 +30,8 @@ class RunActiveTasks extends Command
                     $format = TaskSetting::where('task_id', $task->id)->where('key', 'format')->value('value') ?? 'json';
                     $layout = TaskSetting::where('task_id', $task->id)->where('key', 'layout')->value('value');
                     $server = TaskSetting::where('task_id', $task->id)->where('key', 'server')->value('value');
+                    $emailRecievers = TaskSetting::where('task_id', $task->id)->where('key', 'emails')->value('value');
+                    $taskName = $task->name;
 
                     // Взима API ключа
                     $apiKeyEntry = Key::where('user_id', $task->created_by)->where('host', $server)->first();
@@ -50,7 +52,7 @@ class RunActiveTasks extends Command
                             $this->error("Failed to start async task for task ID {$task->id}, no task ID received.");
                         } else {
                             $this->info("Successfully started async task for task ID {$task->id}. Task ID: {$ident}");
-                            ProcessTaskJob::dispatch($ident, $server, $apiKey, $format);
+                            ProcessTaskJob::dispatch($ident, $server, $apiKey, $format, $emailRecievers, $taskName);
                         }
                     } else {
                         $this->error("Missing required settings for task ID {$task->id}.");
