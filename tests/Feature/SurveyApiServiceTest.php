@@ -76,8 +76,7 @@ public function it_fetches_real_survey_layouts()
     {
         $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
 
-        // Старт на задачата, в случая за SPSS 16
-        $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', 'spss16');  // или 'csv', 'json', и др.
+        $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', 'json'); // тестваме с JSON
         $taskId = $task['ident'] ?? null;
 
         if (!$taskId) {
@@ -89,7 +88,7 @@ public function it_fetches_real_survey_layouts()
         $startTime = microtime(true);
 
         do {
-            usleep(100_000); // Sleep for 100 milliseconds (0.1 seconds)
+            usleep(100_000); // 0.1 секунда
             $status = $service->getTaskStatus($taskId);
             $attempts++;
 
@@ -104,33 +103,32 @@ public function it_fetches_real_survey_layouts()
 
         echo "\nTask {$taskId} completed in {$elapsedTime} ms.\n";
 
-        // Вземаме резултата от задачата (може да е SPSS, CSV, JSON и т.н.)
+        // Вземаме резултата
         $fileData = $service->getTaskResult($taskId);
 
-        // Проверка дали данните са архивирани (например SPSS .zip файл)
-        if (strpos($fileData, 'PK') === 0) {  // 'PK' е началото на ZIP файловете
-            // Това означава, че данните са архивирани (ZIP файл)
-            $fileExtension = 'zip';
+        if (is_array($fileData)) {
+            $fileData = json_encode($fileData, JSON_PRETTY_PRINT);
+            $fileExtension = 'json';
+        } elseif (strpos($fileData, 'PK') === 0) {
+            $fileExtension = 'zip'; // архивиран файл
         } else {
-            // В противен случай, предполагаме CSV формат
-            $fileExtension = 'csv';
+            $fileExtension = 'csv'; // fallback
         }
 
-        // Определяне на пътя към файла с правилното разширение
         $filePath = "private/surveys/survey_{$taskId}.{$fileExtension}";
 
-        // Записваме файла в local storage
+        // Записваме файла
         Storage::disk('local')->put($filePath, $fileData);
 
-        // Проверка дали файлът е записан успешно
         if (Storage::disk('local')->exists($filePath)) {
             echo "\nFile saved successfully: $filePath\n";
         } else {
             $this->fail("Failed to save file.");
         }
 
-        dd($fileData);  // За да покажете данните от файла и да видите дали са архивирани или не
+        dd($fileData);
     }
+
 
 
 

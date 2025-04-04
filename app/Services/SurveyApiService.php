@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SurveyApiService
 {
@@ -37,19 +38,19 @@ class SurveyApiService
     protected function handleResponse(Response $response)
     {
         if ($response->status() === 401) {
-            abort(401, 'Invalid API Key');
+            throw new HttpException(401, 'Invalid API Key');
         }
 
         if ($response->status() === 404) {
-            abort(404, 'Resource Not Found');
+            throw new HttpException(404, 'Resource Not Found');
         }
 
         if ($response->status() === 429) {
-            abort(429, 'Too Many Requests - Rate Limit Exceeded');
+            throw new HttpException(429, 'Too Many Requests - Rate Limit Exceeded');
         }
 
         if (!$response->successful()) {
-            abort($response->status(), 'API Error: ' . $response->body());
+            throw new HttpException($response->status(), 'API Error: ' . $response->body());
         }
 
         return $response->header('Content-Type') === 'application/json'

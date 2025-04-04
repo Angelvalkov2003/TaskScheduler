@@ -50,28 +50,38 @@ class ProcessTaskJob implements ShouldQueue
         // взимаме данните
         $result = $service->getTaskResult($this->ident);
 
-        // Логваме резултатите (можеш да ги запишеш в база)
-        \Log::info("Task {$this->ident} finished. Result:", ['result' => $result]);
-
-        // Определяме разширението на файла спрямо формата
-        $fileExtension = match ($this->format) {
-            'spss16' => 'sav', // SPSS 16 формат
-            'json' => 'json',  // JSON формат
-            'csv' => 'csv',    // CSV формат
-            default => 'txt',  // по подразбиране текстов файл
-        };
-
-        // Записваме резултата в local storage
-        $filePath = "private/surveys/survey_{$this->ident}.{$fileExtension}";
-        Storage::disk('local')->put($filePath, $result);
-
-        // Проверка дали файлът е записан успешно
-        if (Storage::disk('local')->exists($filePath)) {
-            \Log::info("File saved successfully: $filePath");
-        } else {
-            \Log::error("Failed to save file.");
+        // Ensure the result is in JSON format if the format is 'json'
+        if ($this->format === 'json') {
+            if (is_string($result) && json_decode($result) !== null) {
+            } else {
+                $result = json_encode($result, JSON_PRETTY_PRINT);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    \Log::error("Failed to encode result to JSON: " . json_last_error_msg());
+                    return;
+                }
+            }
         }
 
-        // Тук можеш да запишеш резултата в базата, да изпратиш имейл и т.н.
+        // Determine the file extension based on the format
+        $fileExtension = match ($this->format) {
+            'spss16' => 'sav', // SPSS 16 format
+            'json' => 'json',  // JSON format
+            'csv' => 'csv',    // CSV format
+            default => 'txt',  // Default to text file
+        };
+
+        // Define the file path
+        $filePath = "private/surveys/survey_{$this->ident}.{$fileExtension}";
+
+        // Save the result to local storage
+        $saveSuccess = Storage::disk('local')->put($filePath, $result);
+
+        // Check if the file was successfully saved
+        if ($saveSuccess && Storage::disk('local')->exists($filePath)) {
+            \Log::info("File saved successfully: $filePath");
+        } else {
+            \Log::error("Failed to save file: $filePath");
+        }
     }
+
 }
