@@ -4,10 +4,9 @@ namespace App\Enums;
 
 enum ExportFormat: string
 {
-    case JSON = 'json';
     case XLSX = 'csv';
     case SPSS = 'spss16';
-    case TRIPLE_S = 'tripleS';
+    case TRIPLE_S = 'fwu';
 
     public static function values(): array
     {

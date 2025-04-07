@@ -57,29 +57,28 @@ class ProcessTaskJob implements ShouldQueue
         // взимаме данните
         $result = $service->getTaskResult($this->ident);
 
-        // Formats the json file
+        /*
         if ($this->format === 'json') {
             if (is_array($result)) {
                 $result = json_encode($result, JSON_PRETTY_PRINT);
                 $fileExtension = 'json';
             }
-        }
+        }*/
 
         // Determine the file extension based on the format
         $fileExtension = match ($this->format) {
             'spss16' => 'sav', // SPSS 16 format
-            'json' => 'json',  // JSON format
             'csv' => 'csv',    // CSV format
             default => 'txt',  // Default to text file
         };
 
-        $filePath = "private/surveys/survey_{$this->ident}.{$fileExtension}";
+        $filePath = "survey_{$this->ident}.{$fileExtension}";
 
         // Save the result to local storage
-        $saveSuccess = Storage::disk('local')->put($filePath, $result);
+        $saveSuccess = Storage::disk('survey_data')->put($filePath, $result);
 
         // Check if the file was successfully saved
-        if ($saveSuccess && Storage::disk('local')->exists($filePath)) {
+        if ($saveSuccess && Storage::disk('survey_data')->exists($filePath)) {
             \Log::info("File saved successfully: $filePath");
 
             // Изпращаме имейл с прикачен файл

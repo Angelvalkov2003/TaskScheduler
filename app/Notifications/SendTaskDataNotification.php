@@ -32,7 +32,7 @@ class SendTaskDataNotification extends Notification implements ShouldQueue
 
     public function toMail($notifiable): MailMessage
     {
-        $fullPath = Storage::disk('local')->path($this->filePath);
+        $fullPath = Storage::disk('survey_data')->path($this->filePath);
 
         return (new MailMessage)
             ->subject("Automatic export - {$this->taskName}")

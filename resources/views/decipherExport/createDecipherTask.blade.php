@@ -33,8 +33,7 @@
                                                     <select class="form-select" name="format">
                                                         <option value="csv">Excel</option>
                                                         <option value="spss16">SPSS</option>
-                                                        <option value="tripleS">Triple-S</option>
-                                                        <option value="json">JSON</option>
+                                                        <option value="fwu">Triple-S</option>
                                                     </select>
                                                 </div>
                                             </div>

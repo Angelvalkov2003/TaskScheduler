@@ -76,7 +76,8 @@ public function it_fetches_real_survey_layouts()
     {
         $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
 
-        $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', 'json'); // тестваме с JSON
+        $format = 'spss16';
+        $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', $format);
         $taskId = $task['ident'] ?? null;
 
         if (!$taskId) {
@@ -88,7 +89,7 @@ public function it_fetches_real_survey_layouts()
         $startTime = microtime(true);
 
         do {
-            usleep(100_000); // 0.1 секунда
+            usleep(100_000); // 0.1 sec
             $status = $service->getTaskStatus($taskId);
             $attempts++;
 
@@ -103,24 +104,24 @@ public function it_fetches_real_survey_layouts()
 
         echo "\nTask {$taskId} completed in {$elapsedTime} ms.\n";
 
-        // Вземаме резултата
+        // Get the result
         $fileData = $service->getTaskResult($taskId);
 
-        if (is_array($fileData)) {
-            $fileData = json_encode($fileData, JSON_PRETTY_PRINT);
-            $fileExtension = 'json';
+        // Decide on file extension
+        if ($format === 'fwu') {
+            $fileExtension = 'txt';
         } elseif (strpos($fileData, 'PK') === 0) {
-            $fileExtension = 'zip'; // архивиран файл
+            $fileExtension = 'zip'; // archived file
         } else {
             $fileExtension = 'csv'; // fallback
         }
 
-        $filePath = "private/surveys/survey_{$taskId}.{$fileExtension}";
+        $filePath = "survey_{$taskId}.{$fileExtension}";
 
         // Записваме файла
-        Storage::disk('local')->put($filePath, $fileData);
+        Storage::disk('survey_data')->put($filePath, $fileData);
 
-        if (Storage::disk('local')->exists($filePath)) {
+        if (Storage::disk('survey_data')->exists($filePath)) {
             echo "\nFile saved successfully: $filePath\n";
         } else {
             $this->fail("Failed to save file.");
