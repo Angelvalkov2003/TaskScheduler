@@ -1,0 +1,123 @@
+https://dbdiagram.io/d/67a26bb1263d6cf9a007a3b9
+
+
+Table tasks {
+  id integer [pk]
+  type varchar
+  name varchar
+  created_by integer
+  start_date timestamp
+  end_date timestamp
+  repeat varchar // CRON
+  archived_at timestamp
+  active boolean
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table task_settings {
+  id integer [pk]
+  task_id integer
+  key varchar
+  value text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table users {
+  id integer [pk]
+  username varchar
+  password varchar
+  email varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table keys {
+  id integer [pk]
+  user_id integer
+  host varchar
+  value varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table task_teams {
+  team_id integer
+  task_id integer
+}
+
+Table roles {
+  id integer [pk]
+  name varchar
+  guard_name varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table permissions {
+  id integer [pk]
+  name varchar
+  guard_name varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table role_has_permissions {
+  permission_id integer
+  role_id integer
+}
+
+Table teams {
+  id integer [pk]
+  name varchar
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table task_logs {
+  id integer [pk]
+  task_id integer
+  run_at timestamp
+  settings json
+  run_outcome json
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table user_role_team {
+  user_id integer
+  team_id integer
+  role_id integer
+}
+
+Table files {
+  id integer [pk]
+  tasklog_id integer
+  path varchar
+  created_at timestamp
+}
+
+Table links {
+  id integer [pk]
+  file_id integer
+  value varchar
+  email varchar
+  password varchar
+  first_used_at boolean
+  created_at timestamp
+}
+
+Ref: tasks.created_by > users.id
+Ref: task_settings.task_id > tasks.id
+Ref: task_teams.team_id > teams.id
+Ref: task_teams.task_id > tasks.id
+Ref: permissions.id > role_has_permissions.permission_id
+Ref: roles.id > role_has_permissions.role_id
+Ref: task_logs.task_id > tasks.id
+Ref: keys.user_id > users.id
+Ref: user_role_team.user_id > users.id
+Ref: user_role_team.team_id > teams.id
+Ref: user_role_team.role_id > roles.id
+Ref: files.tasklog_id > task_logs.id
+Ref: links.file_id > files.id
