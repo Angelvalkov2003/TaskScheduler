@@ -52,7 +52,7 @@ class RunActiveTasks extends Command
                             $this->error("Failed to start async task for task ID {$task->id}, no task ID received.");
                         } else {
                             $this->info("Successfully started async task for task ID {$task->id}. Task ID: {$ident}");
-                            ProcessTaskJob::dispatch($ident, $server, $apiKey, $format, $emailRecievers, $taskName);
+                            ProcessTaskJob::dispatch($ident, $server, $apiKey, $format, $emailRecievers, $taskName, $task->id);
                         }
                     } else {
                         $this->error("Missing required settings for task ID {$task->id}.");

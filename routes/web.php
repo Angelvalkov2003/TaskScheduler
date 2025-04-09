@@ -22,8 +22,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [AuthController::class, 'Profile'])->name('profile');
 });
 
-
-
 Route::get('/index', [TaskController::class, 'index'])->name('tasks.index');
 Route::get('/createDecipherTask', [DecipherExportController::class, 'createDecipherTask'])->name('decipherExport.createDecipherTask');
 Route::post('/decipherExport', [DecipherExportController::class, 'store'])->name('decipherExport.store');

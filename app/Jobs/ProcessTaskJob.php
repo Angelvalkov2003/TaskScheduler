@@ -13,6 +13,11 @@ use Illuminate\Support\Facades\Storage;
 use App\Notifications\SendTaskDataNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Notifications\AnonymousNotifiable;
+use App\Models\TaskLog;
+use App\Models\Task;
+use App\Models\TaskSetting;
+use App\Models\File;
+use Illuminate\Support\Facades\Log;
 
 class ProcessTaskJob implements ShouldQueue
 {
@@ -24,11 +29,12 @@ class ProcessTaskJob implements ShouldQueue
     protected string $format;
     protected string $emailRecievers;
     protected string $taskName;
+    protected ?int $taskId;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(string $ident, string $server, string $apiKey, string $format, string $emailRecievers, string $taskName)
+    public function __construct(string $ident, string $server, string $apiKey, string $format, string $emailRecievers, string $taskName, ?int $taskId = null)
     {
         $this->ident = $ident;
         $this->server = $server;
@@ -36,6 +42,7 @@ class ProcessTaskJob implements ShouldQueue
         $this->format = $format;
         $this->emailRecievers = $emailRecievers;
         $this->taskName = $taskName;
+        $this->taskId = $taskId;
     }
 
     /**
@@ -50,7 +57,7 @@ class ProcessTaskJob implements ShouldQueue
 
         if ($status !== 'finished') {
             // Ако не е приключила, пренасрочваме Job-а да се изпълни отново след 5 минути
-            self::dispatch($this->ident, $this->server, $this->apiKey, $this->format)->delay(now()->addMinutes(1));
+            self::dispatch($this->ident, $this->server, $this->apiKey, $this->format, $this->emailRecievers, $this->taskName, $this->taskId)->delay(now()->addMinutes(1));
             return;
         }
 
@@ -79,7 +86,12 @@ class ProcessTaskJob implements ShouldQueue
 
         // Check if the file was successfully saved
         if ($saveSuccess && Storage::disk('survey_data')->exists($filePath)) {
-            \Log::info("File saved successfully: $filePath");
+            Log::info("File saved successfully: $filePath");
+
+            // Create TaskLog entry if we have a task ID
+            if ($this->taskId) {
+                $this->createTaskLogEntry($filePath);
+            }
 
             // Изпращаме имейл с прикачен файл
             $notification = new SendTaskDataNotification(
@@ -93,8 +105,46 @@ class ProcessTaskJob implements ShouldQueue
             }
 
         } else {
-            \Log::error("Failed to save file: $filePath");
+            Log::error("Failed to save file: $filePath");
+            
+            // Create TaskLog entry with error if we have a task ID
+            if ($this->taskId) {
+                $this->createTaskLogEntry(null, "Failed to save file: $filePath");
+            }
         }
     }
 
+    /**
+     * Create a TaskLog entry with the current task settings and run outcome
+     */
+    private function createTaskLogEntry(?string $filePath, ?string $error = null): void
+    {
+        try {
+            // Get all task settings
+            $taskSettings = TaskSetting::where('task_id', $this->taskId)->get();
+            $settings = [];
+            
+            foreach ($taskSettings as $setting) {
+                $settings[$setting->key] = $setting->value;
+            }
+            
+            // Create the task log entry
+            $taskLog = TaskLog::create([
+                'task_id' => $this->taskId,
+                'run_at' => now(),
+                'settings' => $settings,
+                'run_outcome' => $error ? ['error' => $error] : ['status' => 'success']
+            ]);
+            
+            // If we have a file path, create a File record linked to the TaskLog
+            if ($filePath) {
+                File::create([
+                    'tasklog_id' => $taskLog->id,
+                    'path' => $filePath
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error("Failed to create TaskLog entry: " . $e->getMessage());
+        }
+    }
 }
