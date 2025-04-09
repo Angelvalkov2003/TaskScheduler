@@ -20,4 +20,9 @@ class TaskLog extends Model
     {
         return $this->belongsTo(Task::class);
     }
+
+    public function files()
+    {
+        return $this->hasMany(File::class, 'tasklog_id');
+    }
 }
