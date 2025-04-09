@@ -17,6 +17,7 @@ use App\Models\TaskLog;
 use App\Models\Task;
 use App\Models\TaskSetting;
 use App\Models\File;
+use App\Models\Link;
 use Illuminate\Support\Facades\Log;
 
 class ProcessTaskJob implements ShouldQueue
@@ -93,20 +94,11 @@ class ProcessTaskJob implements ShouldQueue
                 $this->createTaskLogEntry($filePath);
             }
 
-            // Изпращаме имейл с прикачен файл
-            $notification = new SendTaskDataNotification(
-                $this->emailRecievers,
-                $this->taskName,
-                $filePath
-            );
 
-            foreach ($notification->getEmailRecipients() as $email) {
-                Notification::route('mail', $email)->notify($notification);
-            }
 
         } else {
             Log::error("Failed to save file: $filePath");
-            
+
             // Create TaskLog entry with error if we have a task ID
             if ($this->taskId) {
                 $this->createTaskLogEntry(null, "Failed to save file: $filePath");
@@ -123,11 +115,11 @@ class ProcessTaskJob implements ShouldQueue
             // Get all task settings
             $taskSettings = TaskSetting::where('task_id', $this->taskId)->get();
             $settings = [];
-            
+
             foreach ($taskSettings as $setting) {
                 $settings[$setting->key] = $setting->value;
             }
-            
+
             // Create the task log entry
             $taskLog = TaskLog::create([
                 'task_id' => $this->taskId,
@@ -135,16 +127,42 @@ class ProcessTaskJob implements ShouldQueue
                 'settings' => $settings,
                 'run_outcome' => $error ? ['error' => $error] : ['status' => 'success']
             ]);
-            
+
             // If we have a file path, create a File record linked to the TaskLog
             if ($filePath) {
-                File::create([
+                $file = File::create([
                     'tasklog_id' => $taskLog->id,
                     'path' => $filePath
                 ]);
+                $this->sendEmailsWithLinks($file);
             }
         } catch (\Exception $e) {
             Log::error("Failed to create TaskLog entry: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Send emails with attachments and create Link records
+     */
+    private function sendEmailsWithLinks(File $file): void
+    {
+        $recipients = array_map('trim', explode(',', $this->emailRecievers));
+
+        foreach ($recipients as $email) {
+            // Create a Link record for this recipient
+            $link = Link::create([
+                'file_id' => $file->id,
+                'email' => $email
+            ]);
+
+            // Send email with attachment
+            $notification = new SendTaskDataNotification(
+                $email,
+                $this->taskName,
+                $file->path
+            );
+
+            Notification::route('mail', $email)->notify($notification);
         }
     }
 }

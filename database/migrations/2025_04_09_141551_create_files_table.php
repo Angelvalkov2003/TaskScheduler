@@ -12,7 +12,7 @@ class CreateFilesTable extends Migration
             $table->id();
             $table->foreignId('tasklog_id')->constrained('task_logs')->onDelete('cascade');
             $table->string('path');
-            $table->timestamp('created_at')->useCurrent();
+            $table->timestamps();
         });
     }
 
