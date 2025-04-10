@@ -16,9 +16,6 @@
             </div>
         </div>
 
-        
-        <!--<input type="text" class="form-control" placeholder="Search by name or id…" /> -->
-        <!-- Таблица със задачи -->
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -32,62 +29,42 @@
                                 <th>End date</th>
                                 <th>Status</th>
                                 <th>Created by</th>
-                                <th> </th>
-                                
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach($tasks as $task)
                             <tr>
-                                <td>1</td>
-                                <td>Decipher Auto Export</td>
-                                <td>Disney Standart Excel AutoExport</td>
-                                <td>12.03.2025</td>
-                                <td>20.03.2025</td>
-                                <td><span class="status status-green">Active</span></td>
-                                <td>Angel Valkov</td>
-                                <td><a href="./ViewDecipherAutoExport.html"><button class="btn btn-primary btn-sm">View details</button></a>
-                                <a href="#"><button class="btn btn-primary btn-sm">Force</button></a>
-                            </td>
-                                
+                                <td>{{ $task->id }}</td>
+                                <td>{{ $task->type }}</td>
+                                <td>{{ $task->name }}</td>
+                                <td>{{ $task->start_date->format('d.m.Y') }}</td>
+                                <td>{{ $task->end_date->format('d.m.Y') }}</td>
+                                <td>
+                                    @if($task->archived_at)
+                                        <span class="status status-yellow">Archived</span>
+                                    @elseif($task->is_active)
+                                        <span class="status status-green">Active</span>
+                                    @else
+                                        <span class="status">Inactive</span>
+                                    @endif
+                                </td>
+                                <td>{{ $task->creator->username }}</td>
+                                <td>
+                                    <a href="{{ route('decipherExport.createDecipherTask', ['task' => $task->id]) }}">
+                                        <button class="btn btn-primary btn-sm">View details</button>
+                                    </a>
+                                    <a href="#">
+                                        <button class="btn btn-primary btn-sm">Force</button>
+                                    </a>
+                                </td>
                             </tr>
-                            <tr>
-                                <td>2</td>
-                                <td>Decipher Auto Export</td>
-                                <td>Amazon NPS 912312312 Standart SPSS AutoExport</td>
-                                <td>12.03.2025</td>
-                                <td>20.03.2025</td>
-                                <td><span class="status">Inactive</span></td>
-                                <td>Nikolay Mihaylov</td>
-                                <td><a href="./ViewDecipherAutoExport.html"><button class="btn btn-primary btn-sm">View details</button></a>
-                                    <a href="#"><button class="btn btn-primary btn-sm">Force</button></a></td>
-                            </tr>
-                            <tr>
-                                <td>331</td>
-                                <td>Decipher Auto Export</td>
-                                <td>Google Surveys Monthly Export</td>
-                                <td>12.03.2025</td>
-                                <td>20.03.2025</td>
-                                <td><span class="status status-green">Active</span></td>
-                                <td>Petar Georgiev</td>
-                                <td><a href="./ViewDecipherAutoExport.html"><button class="btn btn-primary btn-sm">View details</button></a>
-                                    <a href="#"><button class="btn btn-primary btn-sm">Force</button></a></td>
-                            </tr>
-                            <tr>
-                                <td>442</td>
-                                <td>Confirmit Auto Export</td>
-                                <td>Facebook Ads Performance Report</td>
-                                <td>12.03.2025</td>
-                                <td>20.03.2025</td>
-                                <td><span class="status status-yellow">Archived</span></td>
-                                <td>Kristina Ivanova</td>
-                                <td><a href="./ViewDecipherAutoExport.html"><button class="btn btn-primary btn-sm">View details</button></a>
-                                    <a href="#"><button class="btn btn-primary btn-sm">Force</button></a></td>
-                            </tr>
+                            @endforeach
                         </tbody>
-                        
                     </table>
                 </div>
             </div>
         </div>
         @endauth
+    </div>
 </x-layout>

@@ -9,7 +9,23 @@ class Task extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['type', 'name', 'created_by', 'start_date', 'end_date', 'repeat', 'archived_at', 'is_active'];
+    protected $fillable = [
+        'type',
+        'name',
+        'created_by',
+        'start_date',
+        'end_date',
+        'repeat',
+        'archived_at',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+        'archived_at' => 'datetime',
+        'is_active' => 'boolean',
+    ];
 
     public function creator()
     {
