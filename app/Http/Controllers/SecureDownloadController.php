@@ -54,6 +54,10 @@ class SecureDownloadController extends Controller
             abort(404, 'File not found');
         }
 
+        if (is_null($link->first_used_at)) {
+            $link->update(['first_used_at' => now()]);
+        }
+
         return response()->download(
             Storage::disk('survey_data')->path($file->path),
             basename($file->path)
