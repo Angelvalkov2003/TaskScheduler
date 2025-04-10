@@ -6,45 +6,50 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Facades\Storage;
 
 class SendTaskDataNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    protected string $emails;
-    protected string $taskName;
-    protected string $filePath;
-    protected string $fileName;
-
-    public function __construct(string $emails, string $taskName, string $filePath)
-    {
-        $this->emails = $emails;
-        $this->taskName = $taskName;
-        $this->filePath = $filePath;
-        $this->fileName = basename($filePath);
+    /**
+     * Create a new notification instance.
+     */
+    public function __construct(
+        protected string $email,
+        protected string $taskName,
+        protected string $linkValue
+    ) {
     }
 
-    public function via($notifiable): array
+    /**
+     * Get the notification's delivery channels.
+     *
+     * @return array<int, string>
+     */
+    public function via(object $notifiable): array
     {
         return ['mail'];
     }
 
-    public function toMail($notifiable): MailMessage
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
     {
-        $fullPath = Storage::disk('survey_data')->path($this->filePath);
+        $downloadUrl = config('app.url') . '/download/' . $this->linkValue;
 
         return (new MailMessage)
-            ->subject("Automatic export - {$this->taskName}")
-            ->line('The export is ready and attached.')
-            ->attach($fullPath, [
-                'as' => $this->fileName,
-                'mime' => mime_content_type($fullPath),
-            ]);
+            ->subject("Download Link for {$this->taskName}")
+            ->greeting("Hello!")
+            ->line("Your data for {$this->taskName} is ready for download.")
+            ->line("Click the button below to access your download:")
+            ->action('Download Data', $downloadUrl)
+            ->line("You will receive a separate email with the password to access this download.")
+            ->line("Thank you for using Task Scheduler!");
     }
 
     public function getEmailRecipients(): array
     {
-        return array_map('trim', explode(',', $this->emails));
+        return array_map('trim', explode(',', $this->email));
     }
 }

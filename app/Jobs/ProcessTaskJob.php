@@ -19,6 +19,7 @@ use App\Models\TaskSetting;
 use App\Models\File;
 use App\Models\Link;
 use Illuminate\Support\Facades\Log;
+use App\Notifications\SendTaskDataPasswordNotification;
 
 class ProcessTaskJob implements ShouldQueue
 {
@@ -142,27 +143,36 @@ class ProcessTaskJob implements ShouldQueue
     }
 
     /**
-     * Send emails with attachments and create Link records
+     * Send emails with links and passwords
      */
     private function sendEmailsWithLinks(File $file): void
     {
         $recipients = array_map('trim', explode(',', $this->emailRecievers));
-
+        
         foreach ($recipients as $email) {
             // Create a Link record for this recipient
             $link = Link::create([
                 'file_id' => $file->id,
                 'email' => $email
             ]);
-
-            // Send email with attachment
-            $notification = new SendTaskDataNotification(
+            
+            // Send email with download link
+            $linkNotification = new SendTaskDataNotification(
                 $email,
                 $this->taskName,
-                $file->path
+                $link->value
             );
-
-            Notification::route('mail', $email)->notify($notification);
+            
+            // Send email with password
+            $passwordNotification = new SendTaskDataPasswordNotification(
+                $email,
+                $this->taskName,
+                $link->password
+            );
+            
+            // Send both notifications
+            Notification::route('mail', $email)->notify($linkNotification);
+            Notification::route('mail', $email)->notify($passwordNotification);
         }
     }
 }
