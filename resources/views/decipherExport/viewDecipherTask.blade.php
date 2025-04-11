@@ -88,11 +88,13 @@
         
             <!-- Buttons -->
             <div class="d-flex flex-wrap gap-2">
-                <form action="{{ route('tasks.force', $task) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-primary">Force the task</button>
-                </form>
-                <a href="{{ route('decipherExport.createDecipherTask', ['task' => $task->id]) }}" class="btn btn-primary">Edit the task</a>
+                <div class="text-end">
+                    <a href="{{ route('tasks.edit', $task) }}" class="btn btn-primary me-2">Edit Task</a>
+                    <form action="{{ route('tasks.force', $task) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-success">Force Run Now</button>
+                    </form>
+                </div>
                 <a href="#" class="btn btn-danger">Delete the task</a>
             </div>
         </div>
