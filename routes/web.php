@@ -24,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/index', [TaskController::class, 'index'])->name('tasks.index');
+Route::get('/tasks/{task}/view', [TaskController::class, 'view'])->name('tasks.view');
 Route::post('/tasks/{task}/force', [TaskController::class, 'force'])->name('tasks.force');
 Route::get('/createDecipherTask', [DecipherExportController::class, 'createDecipherTask'])->name('decipherExport.createDecipherTask');
 Route::post('/decipherExport', [DecipherExportController::class, 'store'])->name('decipherExport.store');

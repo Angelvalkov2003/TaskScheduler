@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\TaskSetting;
 use App\Models\Key;
+use App\Models\TaskLog;
 use App\Jobs\ProcessTaskJob;
 use App\Services\SurveyApiService;
 use Illuminate\Support\Facades\Auth;
@@ -20,6 +21,32 @@ class TaskController extends Controller
 
         return view('tasks.index', [
             'tasks' => $tasks
+        ]);
+    }
+
+    /**
+     * View task details
+     */
+    public function view(Task $task)
+    {
+        // Load task settings
+        $settings = TaskSetting::where('task_id', $task->id)->get();
+        $taskSettings = [];
+        
+        foreach ($settings as $setting) {
+            $taskSettings[$setting->key] = $setting->value;
+        }
+        
+        // Load recent task logs
+        $taskLogs = TaskLog::where('task_id', $task->id)
+            ->orderBy('run_at', 'desc')
+            ->limit(10)
+            ->get();
+        
+        return view('decipherExport.viewDecipherTask', [
+            'task' => $task,
+            'taskSettings' => $taskSettings,
+            'taskLogs' => $taskLogs
         ]);
     }
 

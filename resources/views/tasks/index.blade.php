@@ -49,11 +49,10 @@
                                         <span class="status">Inactive</span>
                                     @endif
                                 </td>
-                                <td>{{ $task->creator->username }}</td>
+                                <td>{{ $task->creator->name }}</td>
                                 <td>
-                                    <a href="{{ route('decipherExport.createDecipherTask', ['task' => $task->id]) }}">
-                                        <button class="btn btn-primary btn-sm">View details</button>
-                                    </a>
+                                    <a href="{{ route('tasks.view', $task) }}" class="btn btn-primary btn-sm">View details</a>
+                                
                                     <form action="{{ route('tasks.force', $task) }}" method="POST" class="d-inline">
                                         @csrf
                                         <button type="submit" class="btn btn-primary btn-sm">Force</button>
