@@ -6,8 +6,12 @@ use App\Models\Task;
 use App\Models\TaskLog;
 use App\Models\TaskTeam;
 use App\Models\TaskSetting;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreDecipherExportRequest;
+use App\Jobs\ProcessTaskJob;
+use App\Services\SurveyApiService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Models\Key;
 
 
 class DecipherExportController extends Controller
@@ -59,6 +63,100 @@ class DecipherExportController extends Controller
             return redirect()->back()->with('success', 'Task created successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
+        }
+    }
+
+    public function view(Task $task)
+    {
+        // Load task settings
+        $settings = TaskSetting::where('task_id', $task->id)->get();
+        $taskSettings = [];
+        
+        foreach ($settings as $setting) {
+            $taskSettings[$setting->key] = $setting->value;
+        }
+        
+        // Load recent task logs
+        $taskLogs = TaskLog::where('task_id', $task->id)
+            ->orderBy('run_at', 'desc')
+            ->limit(10)
+            ->get();
+        
+        return view('decipherExport.viewDecipherTask', [
+            'task' => $task,
+            'taskSettings' => $taskSettings,
+            'taskLogs' => $taskLogs
+        ]);
+    }
+
+
+    /**
+     * Show the form for editing the specified task.
+     */
+    public function edit(Task $task)
+    {
+        // Get task settings
+        $settings = TaskSetting::where('task_id', $task->id)->get();
+        $taskSettings = [];
+        
+        foreach ($settings as $setting) {
+            $taskSettings[$setting->key] = $setting->value;
+        }
+        
+        return view('decipherExport.editDecipherTask', compact('task', 'taskSettings'));
+    }
+
+    /**
+     * Update the specified task in storage.
+     */
+    public function update(Request $request, Task $task)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'survey_path' => 'required|string',
+            'format' => 'required|string',
+            'layout' => 'required|string',
+            'condition' => 'required|string',
+            'emails' => 'required|string',
+            'repeat' => 'required|string',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+        ]);
+        
+        try {
+            // Update task
+            $task->update([
+                'name' => $request->name,
+                'repeat' => $request->repeat,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+            ]);
+            
+            // Parse survey path to get server and survey path
+            $surveyPathParts = explode('/survey/', $request->survey_path);
+            $server = $surveyPathParts[0];
+            $surveyPath = $surveyPathParts[1] ?? '';
+            
+            // Update task settings
+            $settingsToUpdate = [
+                'server' => $server,
+                'survey_path' => $surveyPath,
+                'format' => $request->format,
+                'layout' => $request->layout,
+                'condition' => $request->condition,
+                'emails' => $request->emails,
+            ];
+            
+            foreach ($settingsToUpdate as $key => $value) {
+                TaskSetting::updateOrCreate(
+                    ['task_id' => $task->id, 'key' => $key],
+                    ['value' => $value]
+                );
+            }
+            
+            return redirect()->route('decipherExport.view', $task)->with('success', 'Task updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()->route('decipherExport.edit', $task)->with('error', 'Failed to update task: ' . $e->getMessage());
         }
     }
 

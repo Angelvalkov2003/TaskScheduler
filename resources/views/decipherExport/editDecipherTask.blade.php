@@ -4,7 +4,7 @@
 
         <div class="card">
             <div class="card-body">
-                <form action="{{ route('tasks.update', $task->id) }}" method="POST">
+                <form action="{{ route('decipherExport.update', $task->id) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -132,7 +132,7 @@
                     </div>
 
                     <div class="text-end">
-                        <a href="{{ route('tasks.view', $task) }}" class="btn btn-secondary me-2">Cancel</a>
+                        <a href="{{ route('decipherExport.view', $task) }}" class="btn btn-secondary me-2">Cancel</a>
                         <button type="submit" class="btn btn-primary">Update the Decipher Auto Export</button>
                     </div>
                 </form>

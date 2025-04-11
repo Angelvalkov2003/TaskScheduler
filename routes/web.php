@@ -24,9 +24,9 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('/index', [TaskController::class, 'index'])->name('tasks.index');
-Route::get('/tasks/{task}/view', [TaskController::class, 'view'])->name('tasks.view');
-Route::get('/tasks/{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
-Route::put('/tasks/{task}', [TaskController::class, 'update'])->name('tasks.update');
+Route::get('/decipherExport/{task}/view', [DecipherExportController::class, 'view'])->name('decipherExport.view');
+Route::get('/decipherExport/{task}/edit', [DecipherExportController::class, 'edit'])->name('decipherExport.edit');
+Route::put('/decipherExport/{task}', [DecipherExportController::class, 'update'])->name('decipherExport.update');
 Route::post('/tasks/{task}/force', [TaskController::class, 'force'])->name('tasks.force');
 Route::get('/createDecipherTask', [DecipherExportController::class, 'createDecipherTask'])->name('decipherExport.createDecipherTask');
 Route::post('/decipherExport', [DecipherExportController::class, 'store'])->name('decipherExport.store');

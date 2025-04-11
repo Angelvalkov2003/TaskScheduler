@@ -51,7 +51,7 @@
                                 </td>
                                 <td>{{ $task->creator->name }}</td>
                                 <td>
-                                    <a href="{{ route('tasks.view', $task) }}" class="btn btn-primary btn-sm">View details</a>
+                                    <a href="{{ route('decipherExport.view', $task) }}" class="btn btn-primary btn-sm">View details</a>
                                 
                                     <form action="{{ route('tasks.force', $task) }}" method="POST" class="d-inline">
                                         @csrf
