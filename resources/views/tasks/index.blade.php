@@ -54,9 +54,10 @@
                                     <a href="{{ route('decipherExport.createDecipherTask', ['task' => $task->id]) }}">
                                         <button class="btn btn-primary btn-sm">View details</button>
                                     </a>
-                                    <a href="#">
-                                        <button class="btn btn-primary btn-sm">Force</button>
-                                    </a>
+                                    <form action="{{ route('tasks.force', $task) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-primary btn-sm">Force</button>
+                                    </form>
                                 </td>
                             </tr>
                             @endforeach
