@@ -107,23 +107,17 @@ class DecipherExportController extends Controller
     }
 
     /**
-     * Update the specified task in storage.
+     * Update the specified decipher export in storage.
      */
-    public function update(Request $request, Task $task)
+    public function update(StoreDecipherExportRequest $request, Task $task)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'survey_path' => 'required|string',
-            'format' => 'required|string',
-            'layout' => 'required|string',
-            'condition' => 'required|string',
-            'emails' => 'required|string',
-            'repeat' => 'required|string',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-        ]);
-        
         try {
+            // Format the server and the path
+            $fullSurveyUrl = $request->input('survey_path');
+            $parsedUrl = parse_url($fullSurveyUrl);
+            $server = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
+            $surveyPath = ltrim($parsedUrl['path'], '/survey/');
+
             // Update task
             $task->update([
                 'name' => $request->name,
@@ -131,11 +125,6 @@ class DecipherExportController extends Controller
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
             ]);
-            
-            // Parse survey path to get server and survey path
-            $surveyPathParts = explode('/survey/', $request->survey_path);
-            $server = $surveyPathParts[0];
-            $surveyPath = $surveyPathParts[1] ?? '';
             
             // Update task settings
             $settingsToUpdate = [
@@ -156,6 +145,7 @@ class DecipherExportController extends Controller
             
             return redirect()->route('decipherExport.view', $task)->with('success', 'Task updated successfully.');
         } catch (\Exception $e) {
+            Log::error('Failed to update decipher export: ' . $e->getMessage());
             return redirect()->route('decipherExport.edit', $task)->with('error', 'Failed to update task: ' . $e->getMessage());
         }
     }
