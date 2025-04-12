@@ -18,6 +18,9 @@ class SendTaskEmailsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 3;
+    public $timeout = 30;
+
     protected string $emailRecipients;
     protected string $taskName;
     protected int $fileId;
@@ -46,6 +49,8 @@ class SendTaskEmailsJob implements ShouldQueue
                 'error' => $e->getMessage(),
                 'file_id' => $this->fileId
             ]);
+
+            throw $e; // rethrow to trigger retry if needed
         }
     }
 
@@ -54,32 +59,27 @@ class SendTaskEmailsJob implements ShouldQueue
      */
     private function sendEmailsWithLinks(File $file): void
     {
-        $recipients = array_map('trim', explode(',', $this->emailRecipients));
+        $recipients = array_filter(array_map('trim', explode(',', $this->emailRecipients)), function ($email) {
+            return filter_var($email, FILTER_VALIDATE_EMAIL);
+        });
 
         foreach ($recipients as $email) {
-            // Create a Link record for this recipient
             $link = Link::create([
                 'file_id' => $file->id,
                 'email' => $email
             ]);
 
-            // Send email with download link
-            $linkNotification = new SendTaskDataNotification(
+            Notification::route('mail', $email)->notify(new SendTaskDataNotification(
                 $email,
                 $this->taskName,
                 $link->value
-            );
+            ));
 
-            // Send email with password
-            $passwordNotification = new SendTaskDataPasswordNotification(
+            Notification::route('mail', $email)->notify(new SendTaskDataPasswordNotification(
                 $email,
                 $this->taskName,
                 $link->password
-            );
-
-            // Send both notifications
-            Notification::route('mail', $email)->notify($linkNotification);
-            Notification::route('mail', $email)->notify($passwordNotification);
+            ));
         }
     }
-} 
+}
