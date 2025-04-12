@@ -25,61 +25,15 @@ class TaskController extends Controller
     }
     public function force(Task $task)
     {
-
-        // Get task settings
-        $settings = TaskSetting::where('task_id', $task->id)->get();
-        $settingsMap = [];
-
-        foreach ($settings as $setting) {
-            $settingsMap[$setting->key] = $setting->value;
-        }
-
-        // Extract required settings
-        $surveyPath = $settingsMap['survey_path'] ?? '';
-        $server = $settingsMap['server'] ?? '';
-        $format = $settingsMap['format'] ?? 'json';
-        $emailRecievers = $settingsMap['emails'] ?? '';
-        $taskName = $task->name;
-
-        // Get API key
-        $apiKeyEntry = Key::where('user_id', Auth::id())
-            ->where('host', $server)
-            ->first();
-
-        if (!$apiKeyEntry) {
+        $result = $task->startTaskExecution(Auth::id());
+        
+        if ($result['success']) {
             return redirect()->route('tasks.index')
-                ->with('error', 'API key not found for this task.');
-        }
-
-        $apiKey = $apiKeyEntry->value;
-
-        // Start the async task and get the ident
-        Log::info("Starting async task for task ID {$task->id}, Survey Path: {$surveyPath}, Format: {$format}, Server: {$server}");
-        $service = new SurveyApiService($server, $apiKey);
-        $taskResponse = $service->startAsyncSurveyDataExport($surveyPath, $format);
-        $ident = $taskResponse['ident'] ?? null;
-        if (!$ident) {
-            Log::error("Failed to start async task for task ID {$task->id}, no task ID received.");
+                ->with('success', 'Task has been queued to run immediately.');
+        } else {
             return redirect()->route('tasks.index')
-                ->with('error', 'Failed to start the task: No task ID received.');
+                ->with('error', $result['message']);
         }
-
-        Log::info("Successfully started async task for task ID {$task->id}. Task ID: {$ident}");
-
-        // Dispatch the job with the ident
-        ProcessTaskJob::dispatch(
-            $ident,
-            $server,
-            $apiKey,
-            $format,
-            $emailRecievers,
-            $taskName,
-            $task->id
-        );
-
-        return redirect()->route('tasks.index')
-            ->with('success', 'Task has been queued to run immediately.');
-
     }
 
 }

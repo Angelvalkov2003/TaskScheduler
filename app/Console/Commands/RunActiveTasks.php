@@ -25,37 +25,12 @@ class RunActiveTasks extends Command
             try {
                 $cron = new CronExpression($task->repeat);
                 if ($cron->isDue()) {
-                    // Взима необходимите настройки за таска
-                    $surveyPath = TaskSetting::where('task_id', $task->id)->where('key', 'survey_path')->value('value');
-                    $format = TaskSetting::where('task_id', $task->id)->where('key', 'format')->value('value') ?? 'json';
-                    $layout = TaskSetting::where('task_id', $task->id)->where('key', 'layout')->value('value');
-                    $server = TaskSetting::where('task_id', $task->id)->where('key', 'server')->value('value');
-                    $emailRecievers = TaskSetting::where('task_id', $task->id)->where('key', 'emails')->value('value');
-                    $taskName = $task->name;
-
-                    // Взима API ключа
-                    $apiKeyEntry = Key::where('user_id', $task->created_by)->where('host', $server)->first();
-                    $apiKey = $apiKeyEntry ? $apiKeyEntry->value : null;
-
-                    if (!$apiKey) {
-                        $this->error("API key is missing for task ID {$task->id} and server {$server}.");
-                        continue;
-                    }
-
-                    if ($surveyPath && $server) {
-                        $this->info("Starting async task for task ID {$task->id}, Survey Path: {$surveyPath}, Format: {$format}, Server: {$server}");
-                        $service = new SurveyApiService($server, $apiKey);
-                        $taskResponse = $service->startAsyncSurveyDataExport($surveyPath, $format);
-                        $ident = $taskResponse['ident'] ?? null;
-
-                        if (!$ident) {
-                            $this->error("Failed to start async task for task ID {$task->id}, no task ID received.");
-                        } else {
-                            $this->info("Successfully started async task for task ID {$task->id}. Task ID: {$ident}");
-                            ProcessTaskJob::dispatch($ident, $server, $apiKey, $format, $emailRecievers, $taskName, $task->id);
-                        }
+                    $result = $task->startTaskExecution();
+                    
+                    if ($result['success']) {
+                        $this->info("Successfully started task ID {$task->id}. Task ID: {$result['task_id']}");
                     } else {
-                        $this->error("Missing required settings for task ID {$task->id}.");
+                        $this->error("Failed to start task ID {$task->id}: {$result['message']}");
                     }
                 }
             } catch (\Throwable $e) {
@@ -63,6 +38,5 @@ class RunActiveTasks extends Command
                 continue;
             }
         }
-
     }
 }
