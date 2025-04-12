@@ -10,16 +10,12 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
-use App\Notifications\SendTaskDataNotification;
-use Illuminate\Support\Facades\Notification;
-use Illuminate\Notifications\AnonymousNotifiable;
 use App\Models\TaskLog;
 use App\Models\Task;
 use App\Models\TaskSetting;
 use App\Models\File;
 use App\Models\Link;
 use Illuminate\Support\Facades\Log;
-use App\Notifications\SendTaskDataPasswordNotification;
 
 class ProcessTaskJob implements ShouldQueue
 {
@@ -134,41 +130,9 @@ class ProcessTaskJob implements ShouldQueue
                 'tasklog_id' => $taskLog->id,
                 'path' => $filePath
             ]);
-            $this->sendEmailsWithLinks($file);
-        }
-    }
-
-    /**
-     * Send emails with links and passwords
-     */
-    private function sendEmailsWithLinks(File $file): void
-    {
-        $recipients = array_map('trim', explode(',', $this->emailRecievers));
-
-        foreach ($recipients as $email) {
-            // Create a Link record for this recipient
-            $link = Link::create([
-                'file_id' => $file->id,
-                'email' => $email
-            ]);
-
-            // Send email with download link
-            $linkNotification = new SendTaskDataNotification(
-                $email,
-                $this->taskName,
-                $link->value
-            );
-
-            // Send email with password
-            $passwordNotification = new SendTaskDataPasswordNotification(
-                $email,
-                $this->taskName,
-                $link->password
-            );
-
-            // Send both notifications
-            Notification::route('mail', $email)->notify($linkNotification);
-            Notification::route('mail', $email)->notify($passwordNotification);
+            
+            // Dispatch the email job instead of sending emails directly
+            SendTaskEmailsJob::dispatch($this->emailRecievers, $this->taskName, $file->id);
         }
     }
 }
