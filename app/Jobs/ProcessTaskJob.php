@@ -112,33 +112,29 @@ class ProcessTaskJob implements ShouldQueue
      */
     private function createTaskLogEntry(?string $filePath, ?string $error = null): void
     {
-        try {
-            // Get all task settings
-            $taskSettings = TaskSetting::where('task_id', $this->taskId)->get();
-            $settings = [];
+        // Get all task settings
+        $taskSettings = TaskSetting::where('task_id', $this->taskId)->get();
+        $settings = [];
 
-            foreach ($taskSettings as $setting) {
-                $settings[$setting->key] = $setting->value;
-            }
+        foreach ($taskSettings as $setting) {
+            $settings[$setting->key] = $setting->value;
+        }
 
-            // Create the task log entry
-            $taskLog = TaskLog::create([
-                'task_id' => $this->taskId,
-                'run_at' => now(),
-                'settings' => $settings,
-                'run_outcome' => $error ? ['error' => $error] : ['status' => 'success']
+        // Create the task log entry
+        $taskLog = TaskLog::create([
+            'task_id' => $this->taskId,
+            'run_at' => now(),
+            'settings' => $settings,
+            'run_outcome' => $error ? ['error' => $error] : ['status' => 'success']
+        ]);
+
+        // If we have a file path, create a File record linked to the TaskLog
+        if ($filePath) {
+            $file = File::create([
+                'tasklog_id' => $taskLog->id,
+                'path' => $filePath
             ]);
-
-            // If we have a file path, create a File record linked to the TaskLog
-            if ($filePath) {
-                $file = File::create([
-                    'tasklog_id' => $taskLog->id,
-                    'path' => $filePath
-                ]);
-                $this->sendEmailsWithLinks($file);
-            }
-        } catch (\Exception $e) {
-            Log::error("Failed to create TaskLog entry: " . $e->getMessage());
+            $this->sendEmailsWithLinks($file);
         }
     }
 
@@ -148,28 +144,28 @@ class ProcessTaskJob implements ShouldQueue
     private function sendEmailsWithLinks(File $file): void
     {
         $recipients = array_map('trim', explode(',', $this->emailRecievers));
-        
+
         foreach ($recipients as $email) {
             // Create a Link record for this recipient
             $link = Link::create([
                 'file_id' => $file->id,
                 'email' => $email
             ]);
-            
+
             // Send email with download link
             $linkNotification = new SendTaskDataNotification(
                 $email,
                 $this->taskName,
                 $link->value
             );
-            
+
             // Send email with password
             $passwordNotification = new SendTaskDataPasswordNotification(
                 $email,
                 $this->taskName,
                 $link->password
             );
-            
+
             // Send both notifications
             Notification::route('mail', $email)->notify($linkNotification);
             Notification::route('mail', $email)->notify($passwordNotification);
