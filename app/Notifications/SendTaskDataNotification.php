@@ -36,7 +36,7 @@ class SendTaskDataNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $downloadUrl = config('app.url') . '/download/' . $this->linkValue;
+        $downloadUrl = route('secure-download.form', ['value' => $this->linkValue]);
 
         return (new MailMessage)
             ->subject("Download Link for {$this->taskName}")
