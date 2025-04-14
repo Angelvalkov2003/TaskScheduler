@@ -16,6 +16,7 @@ use App\Models\TaskSetting;
 use App\Models\File;
 use App\Models\Link;
 use Illuminate\Support\Facades\Log;
+use App\Enums\ExportFormat;
 
 class ProcessTaskJob implements ShouldQueue
 {
@@ -71,11 +72,13 @@ class ProcessTaskJob implements ShouldQueue
         }*/
 
         // Determine the file extension based on the format
-        $fileExtension = match ($this->format) {
+        $formatEnum = ExportFormat::tryFrom($this->format);
+        $fileExtension = $formatEnum?->fileExtension() ?? 'txt';
+        /*$fileExtension = match ($this->format) {
             'spss16' => 'sav', // SPSS 16 format
             'csv' => 'csv',    // CSV format
             default => 'txt',  // Default to text file
-        };
+        };*/
 
         $filePath = "survey_{$this->ident}.{$fileExtension}";
 
