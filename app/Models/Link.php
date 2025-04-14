@@ -12,6 +12,10 @@ class Link extends Model
 
     protected $dates = ['first_used_at'];
 
+    protected $casts = [
+        'password' => 'encrypted',
+    ];
+
     /**
      * Boot the model.
      */

@@ -103,7 +103,7 @@ class Task extends Model
         $service = new SurveyApiService($server, $apiKey);
         $taskResponse = $service->startAsyncSurveyDataExport($surveyPath, $format);
         $ident = $taskResponse['ident'] ?? null;
-        
+
         if (!$ident) {
             Log::error("Failed to start async task for task ID {$this->id}, no task ID received.");
             return [
