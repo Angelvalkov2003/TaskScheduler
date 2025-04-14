@@ -28,6 +28,7 @@ Route::get('/decipherExport/{task}/view', [DecipherExportController::class, 'vie
 Route::get('/decipherExport/{task}/edit', [DecipherExportController::class, 'edit'])->name('decipherExport.edit');
 Route::put('/decipherExport/{task}', [DecipherExportController::class, 'update'])->name('decipherExport.update');
 Route::post('/tasks/{task}/force', [TaskController::class, 'force'])->name('tasks.force');
+Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
 Route::get('/createDecipherTask', [DecipherExportController::class, 'createDecipherTask'])->name('decipherExport.createDecipherTask');
 Route::post('/decipherExport', [DecipherExportController::class, 'store'])->name('decipherExport.store');
 

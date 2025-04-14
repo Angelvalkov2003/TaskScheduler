@@ -95,7 +95,11 @@
                         <button type="submit" class="btn btn-success">Force Run Now</button>
                     </form>
                 </div>
-                <a href="#" class="btn btn-danger">Delete the task</a>
+                <form action="{{ route('tasks.destroy', $task) }}" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this task?')">Delete the task</button>
+                </form>
             </div>
         </div>
     </div>
