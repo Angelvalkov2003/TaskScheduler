@@ -32,9 +32,9 @@ Route::get('/createDecipherTask', [DecipherExportController::class, 'createDecip
 Route::post('/decipherExport', [DecipherExportController::class, 'store'])->name('decipherExport.store');
 
 // Secure Download Routes
-Route::get('/download/{value}', [SecureDownloadController::class, 'showPasswordForm'])
+Route::get('/download/{slug}', [SecureDownloadController::class, 'showPasswordForm'])
     ->name('secure-download.form');
-Route::post('/download/{value}/verify', [SecureDownloadController::class, 'verifyPassword'])
+Route::post('/download/{slug}/verify', [SecureDownloadController::class, 'verifyPassword'])
     ->name('secure-download.verify');
-Route::get('/download/{value}/file', [SecureDownloadController::class, 'download'])
+Route::get('/download/{slug}/file', [SecureDownloadController::class, 'download'])
     ->name('secure-download.download');

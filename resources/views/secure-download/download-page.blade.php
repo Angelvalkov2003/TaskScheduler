@@ -8,7 +8,7 @@
                     <p class="mb-4">Your file is ready to download. Click the button below to start the download.</p>
                     
                     <div class="mt-4">
-                        <a href="{{ route('secure-download.download', $link->value) }}" 
+                        <a href="{{ route('secure-download.download', $link->slug) }}" 
                             class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                             Download File
                         </a>

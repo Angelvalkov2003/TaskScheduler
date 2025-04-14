@@ -17,7 +17,7 @@ class SendTaskDataNotification extends Notification implements ShouldQueue
     public function __construct(
         protected string $email,
         protected string $taskName,
-        protected string $linkValue
+        protected string $linkSlug
     ) {
     }
 
@@ -36,7 +36,7 @@ class SendTaskDataNotification extends Notification implements ShouldQueue
      */
     public function toMail(object $notifiable): MailMessage
     {
-        $downloadUrl = route('secure-download.form', ['value' => $this->linkValue]);
+        $downloadUrl = route('secure-download.form', ['slug' => $this->linkSlug]);
 
         return (new MailMessage)
             ->subject("Download Link for {$this->taskName}")

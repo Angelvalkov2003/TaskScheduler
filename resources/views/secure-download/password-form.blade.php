@@ -7,7 +7,7 @@
                     
                     <p class="mb-4">This file was shared with {{ $email }}. Please enter the password to access the download.</p>
                     
-                    <form method="POST" action="{{ route('secure-download.verify', $value) }}" class="space-y-4">
+                    <form method="POST" action="{{ route('secure-download.verify', $slug) }}" class="space-y-4">
                         @csrf
                         
                         <div>

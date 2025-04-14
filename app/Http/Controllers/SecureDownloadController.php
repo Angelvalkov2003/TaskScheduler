@@ -11,12 +11,12 @@ class SecureDownloadController extends Controller
     /**
      * Show the password form for a secure download
      */
-    public function showPasswordForm(string $value)
+    public function showPasswordForm(string $slug)
     {
-        $link = Link::where('value', $value)->firstOrFail();
+        $link = Link::where('slug', $slug)->firstOrFail();
 
         return view('secure-download.password-form', [
-            'value' => $value,
+            'slug' => $slug,
             'email' => $link->email
         ]);
     }
@@ -24,9 +24,9 @@ class SecureDownloadController extends Controller
     /**
      * Verify password and show download page or return to password form
      */
-    public function verifyPassword(Request $request, string $value)
+    public function verifyPassword(Request $request, string $slug)
     {
-        $link = Link::where('value', $value)->firstOrFail();
+        $link = Link::where('slug', $slug)->firstOrFail();
 
         if ($request->password !== $link->password) {
             return back()->withErrors([
@@ -42,9 +42,9 @@ class SecureDownloadController extends Controller
     /**
      * Download the file
      */
-    public function download(string $value)
+    public function download(string $slug)
     {
-        $link = Link::where('value', $value)
+        $link = Link::where('slug', $slug)
             ->whereHas('file')
             ->firstOrFail();
 

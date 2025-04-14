@@ -11,7 +11,7 @@ class CreateLinksTable extends Migration
         Schema::create('links', function (Blueprint $table) {
             $table->id();
             $table->foreignId('file_id')->constrained('files')->onDelete('cascade');
-            $table->string('value')->unique();
+            $table->string('slug')->unique();
             $table->string('email');
             $table->string('password')->unique();
             $table->timestamp('first_used_at')->nullable(); // пази дата и час, nullable по подразбиране

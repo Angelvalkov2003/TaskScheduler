@@ -72,7 +72,7 @@ class SendTaskEmailsJob implements ShouldQueue
             Notification::route('mail', $email)->notify(new SendTaskDataNotification(
                 $email,
                 $this->taskName,
-                $link->value
+                $link->slug
             ));
 
             Notification::route('mail', $email)->notify(new SendTaskDataPasswordNotification(

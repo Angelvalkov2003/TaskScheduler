@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 
 class Link extends Model
 {
-    protected $fillable = ['file_id', 'value', 'email', 'password', 'first_used_at'];
+    protected $fillable = ['file_id', 'slug', 'email', 'password', 'first_used_at'];
 
     protected $dates = ['first_used_at'];
 
@@ -21,10 +21,10 @@ class Link extends Model
 
         static::creating(function ($link) {
             // Generate a unique value if not provided
-            if (empty($link->value)) {
+            if (empty($link->slug)) {
                 do {
-                    $link->value = Str::random(16);
-                } while (static::where('value', $link->value)->exists());
+                    $link->slug = Str::random(16);
+                } while (static::where('slug', $link->slug)->exists());
             }
 
             // Generate a unique password if not provided
