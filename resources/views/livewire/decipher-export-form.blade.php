@@ -1,0 +1,174 @@
+
+<div>
+    <form wire:submit="store">
+        @csrf
+
+        <div class="mb-3 w-50 mx-auto">
+            <label class="form-label">Survey path:</label>
+            <div class="input-group">
+                <input 
+                    class="form-control @error('surveyPath') is-invalid @enderror" 
+                    wire:model.live="surveyPath" 
+                    wire:change="validateSurveyPath"
+                    placeholder="Please input the survey path..." 
+                    required
+                />
+                <button type="button" class="btn btn-outline-secondary" wire:click="validateSurveyPath" wire:loading.attr="disabled">
+                    <span wire:loading.remove wire:target="validateSurveyPath">Validate</span>
+                    <span wire:loading wire:target="validateSurveyPath">
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Validating...
+                    </span>
+                </button>
+            </div>
+            @error('surveyPath') <div class="invalid-feedback">{{ $message }}</div> @enderror
+            
+            @if($errorMessage)
+                <div class="alert alert-danger mt-2">
+                    {{ $errorMessage }}
+                </div>
+            @endif
+            
+            @if($successMessage)
+                <div class="alert alert-success mt-2">
+                    {{ $successMessage }}
+                </div>
+            @endif
+        </div>
+
+        <div class="page-wrapper">
+            <div class="page-body">
+                <div class="container-xl">
+                    <div class="row row-deck row-cards">
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <label class="form-label">Auto Export name:</label>
+                                    <input class="form-control @error('name') is-invalid @enderror" wire:model="name" placeholder="Type the name of your export..." required/>
+                                    @error('name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Formats:</label>
+                                        <select class="form-select @error('format') is-invalid @enderror" wire:model="format">
+                                            <option value="csv">Excel</option>
+                                            <option value="spss16">SPSS</option>
+                                            <option value="fwu">Triple-S</option>
+                                        </select>
+                                        @error('format') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Layout:</label>
+                                        <select class="form-select @error('layout') is-invalid @enderror" wire:model="layout" @if(empty($layouts)) disabled @endif>
+                                            @if(empty($layouts))
+                                                <option value="standard">Standard</option>
+                                                <option value="oe_data">OE data</option>
+                                                <option value="ce_data">CE data</option>
+                                                <option value="custom_format">Custom format</option>
+                                            @else
+                                                @foreach($layouts as $layout)
+                                                    <option value="{{ $layout['id'] }}">{{ $layout['description'] }}</option>
+                                                @endforeach
+                                            @endif
+                                        </select>
+                                        @error('layout') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <div class="form-label">Condition:</div>
+                                        <div>
+                                            <label class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" wire:model="condition" value="qualified" checked />
+                                                <span class="form-check-label">Qualified respondents</span>
+                                            </label>
+                                            <label class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" wire:model="condition" value="disqualified" />
+                                                <span class="form-check-label">Disqualified respondents</span>
+                                            </label>
+                                            <label class="form-check form-check-inline">
+                                                <input class="form-check-input" type="radio" wire:model="condition" value="all" />
+                                                <span class="form-check-label">All respondents</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label">Emails to receive:</label>
+                                        <textarea class="form-control @error('emails') is-invalid @enderror" wire:model="emails" placeholder="JonJones@gmail.com, AlexPereira@kantar.com, ..." required></textarea>
+                                        @error('emails') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label class="form-label" for="repeat">Repeat:</label>
+                                        <select class="form-select @error('repeat') is-invalid @enderror" id="repeat" wire:model="repeat">
+                                            <option value="* * * * *">Every minute</option>
+                                            <option value="0 9,21 * * *">Every day at 9am and 9pm (GMT)</option>
+                                            <option value="0 9 * * *">Every day at 9am (GMT)</option>
+                                            <option value="0 9 */3 * *">Every 3rd day at 9am (GMT)</option>
+                                            <option value="0 9 * * 1">Every Monday at 9am (GMT)</option>                                                        
+                                        </select>
+                                        @error('repeat') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="start_date" class="form-label">Start time:</label>
+                                        <div class="input-group">
+                                            <input type="datetime-local" id="start_date" wire:model="startDate" class="form-control @error('startDate') is-invalid @enderror" required />
+                                        </div>
+                                        @error('startDate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                        
+                                        <label for="end_date" class="form-label">End time:</label>
+                                        <div class="input-group">
+                                            <input type="datetime-local" id="end_date" wire:model="endDate" class="form-control @error('endDate') is-invalid @enderror" required />
+                                        </div>
+                                        @error('endDate') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div> <!-- End row -->
+                </div>
+            </div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">Save the Decipher Auto Export</button>
+        </div>
+    </form>
+</div>

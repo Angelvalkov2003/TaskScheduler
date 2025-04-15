@@ -10,6 +10,7 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@tabler/core@latest/dist/css/tabler.min.css"
     />
+    @livewireStyles
 </head>
 <body>
   @if (session('success'))
@@ -48,27 +49,21 @@
                 <a href="#" class="nav-link" data-bs-toggle="dropdown">
                     <span class="avatar">
                         <svg xmlns="http://www.w3.org/2000/svg" class="icon avatar-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <circle cx="12" cy="7" r="4" />
-                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0"></path>
+                            <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2"></path>
                         </svg>
                     </span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end">
-                    <span class="dropdown-header">Hi, {{ Auth::user()->email }}</span>
-                    <a href="{{ route('profile') }}" class="dropdown-item">Settings</a>
-                    <div class="dropdown-divider"></div>
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    <a href="{{ route('profile') }}" class="dropdown-item">Profile</a>
+                    <form method="POST" action="{{ route('logout') }}">
                         @csrf
+                        <button type="submit" class="dropdown-item">Logout</button>
                     </form>
-                    <a href="#" class="dropdown-item" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        Logout
-                    </a>
                 </div>
             </div>
             @endauth
-
-            <!-- Dark Mode Toggle -->
             <span class="avatar" id="theme-toggle" style="cursor: pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-moon">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -77,17 +72,15 @@
             </span>
         </div>
     </div>
-</header>
+  </header>
+
+  <main class="container">
+    {{ $slot }}
+  </main>
 
 
-</body>
+  @vite(['resources/js/app.js'])
 
-  
-
-    <main class="container">
-        {{ $slot }}
-    </main>
-
-    @vite(['resources/js/app.js'])
+  @livewireScripts
 </body>
 </html>

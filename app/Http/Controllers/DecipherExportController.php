@@ -18,8 +18,7 @@ class DecipherExportController extends Controller
 {
     public function createDecipherTask()
     {
-
-        return view('decipherExport.createDecipherTask', []);
+        return view('decipherExport.createDecipherTask');
     }
 
     public function store(StoreDecipherExportRequest $request)
