@@ -43,7 +43,7 @@ class DecipherExportForm extends Component
         $this->validate([
             'surveyPath' => 'required|url',
         ]);
-        
+
         // Debounce the validation to avoid too many requests
         $this->validateSurveyPath();
     }
@@ -84,11 +84,10 @@ class DecipherExportForm extends Component
 
             // Get available layouts
             $this->layouts = $service->getSurveyLayouts($surveyPath);
-            
+
             $this->successMessage = 'Survey link is valid. Available layouts loaded.';
             $this->isValidated = true;
         } catch (\Exception $e) {
-            Log::error('Error validating survey path: ' . $e->getMessage());
             $this->errorMessage = 'Error validating survey link: ' . $e->getMessage();
             $this->successMessage = '';
         } finally {
@@ -150,7 +149,7 @@ class DecipherExportForm extends Component
                 'created_by' => Auth::id(),
                 'is_active' => true,
             ];
-            
+
             $task = Task::create($taskData);
 
             // Set up task_settings data
@@ -162,7 +161,7 @@ class DecipherExportForm extends Component
                 'server' => $server,
                 'survey_path' => $surveyPath,
             ];
-            
+
             foreach ($extraData as $key => $value) {
                 TaskSetting::create([
                     'task_id' => $task->id,

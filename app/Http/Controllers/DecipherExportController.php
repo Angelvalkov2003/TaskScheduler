@@ -70,21 +70,16 @@ class DecipherExportController extends Controller
         // Load task settings
         $settings = TaskSetting::where('task_id', $task->id)->get();
         $taskSettings = [];
-        
+
         foreach ($settings as $setting) {
             $taskSettings[$setting->key] = $setting->value;
         }
-        
-        // Load recent task logs
-        $taskLogs = TaskLog::where('task_id', $task->id)
-            ->orderBy('run_at', 'desc')
-            ->limit(10)
-            ->get();
-        
+
+
+
         return view('decipherExport.viewDecipherTask', [
             'task' => $task,
             'taskSettings' => $taskSettings,
-            'taskLogs' => $taskLogs
         ]);
     }
 
@@ -116,7 +111,7 @@ class DecipherExportController extends Controller
                 'start_date' => $request->start_date,
                 'end_date' => $request->end_date,
             ]);
-            
+
             // Update task settings
             $settingsToUpdate = [
                 'server' => $server,
@@ -126,14 +121,14 @@ class DecipherExportController extends Controller
                 'condition' => $request->condition,
                 'emails' => $request->emails,
             ];
-            
+
             foreach ($settingsToUpdate as $key => $value) {
                 TaskSetting::updateOrCreate(
                     ['task_id' => $task->id, 'key' => $key],
                     ['value' => $value]
                 );
             }
-            
+
             return redirect()->route('decipherExport.view', $task)->with('success', 'Task updated successfully.');
         } catch (\Exception $e) {
             Log::error('Failed to update decipher export: ' . $e->getMessage());

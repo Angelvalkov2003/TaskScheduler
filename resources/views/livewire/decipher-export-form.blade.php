@@ -75,16 +75,12 @@
                                     <div class="mb-3">
                                         <label class="form-label">Layout:</label>
                                         <select class="form-select @error('layout') is-invalid @enderror" wire:model="layout" @if(empty($layouts)) disabled @endif>
-                                            @if(empty($layouts))
-                                                <option value="standard">Standard</option>
-                                                <option value="oe_data">OE data</option>
-                                                <option value="ce_data">CE data</option>
-                                                <option value="custom_format">Custom format</option>
-                                            @else
-                                                @foreach($layouts as $layout)
-                                                    <option value="{{ $layout['id'] }}">{{ $layout['description'] }}</option>
-                                                @endforeach
-                                            @endif
+
+                                            <option value="standard">Standard</option>
+                                            @foreach($layouts as $layout)
+                                                <option value="{{ $layout['id'] }}">{{ $layout['description'] }}</option>
+                                            @endforeach
+
                                         </select>
                                         @error('layout') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                     </div>
