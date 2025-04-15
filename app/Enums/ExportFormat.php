@@ -16,7 +16,7 @@ enum ExportFormat: string
     public function fileExtension(): string
     {
         return match ($this) {
-            self::SPSS => 'sav',
+            self::SPSS => 'zip',
             self::XLSX => 'csv',
             self::TRIPLE_S => 'fwu',
             default => 'txt',

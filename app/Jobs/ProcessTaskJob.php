@@ -64,7 +64,7 @@ class ProcessTaskJob implements ShouldQueue
         $fileExtension = $formatEnum?->fileExtension() ?? 'txt';
 
         // взимаме данните
-        $result = $service->getTaskDataSaved($this->ident, $fileExtension);
+        $service->getTaskDataSaved($this->ident, $fileExtension);
 
 
         $filePath = "survey_{$this->ident}.{$fileExtension}";
