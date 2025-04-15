@@ -60,33 +60,19 @@ class ProcessTaskJob implements ShouldQueue
             return;
         }
 
-        // взимаме данните
-        $result = $service->getTaskResult($this->ident);
-
-        /*
-        if ($this->format === 'json') {
-            if (is_array($result)) {
-                $result = json_encode($result, JSON_PRETTY_PRINT);
-                $fileExtension = 'json';
-            }
-        }*/
-
-        // Determine the file extension based on the format
         $formatEnum = ExportFormat::tryFrom($this->format);
         $fileExtension = $formatEnum?->fileExtension() ?? 'txt';
-        /*$fileExtension = match ($this->format) {
-            'spss16' => 'sav', // SPSS 16 format
-            'csv' => 'csv',    // CSV format
-            default => 'txt',  // Default to text file
-        };*/
+
+        // взимаме данните
+        $result = $service->getTaskDataSaved($this->ident, $fileExtension);
+
 
         $filePath = "survey_{$this->ident}.{$fileExtension}";
 
         // Save the result to local storage
-        $saveSuccess = Storage::disk('survey_data')->put($filePath, $result);
 
         // Check if the file was successfully saved
-        if ($saveSuccess && Storage::disk('survey_data')->exists($filePath)) {
+        if (Storage::disk('survey_data')->exists($filePath)) {
             Log::info("File saved successfully: $filePath");
 
             // Create TaskLog entry if we have a task ID
@@ -133,7 +119,7 @@ class ProcessTaskJob implements ShouldQueue
                 'tasklog_id' => $taskLog->id,
                 'path' => $filePath
             ]);
-            
+
             // Dispatch the email job instead of sending emails directly
             SendTaskEmailsJob::dispatch($this->emailRecievers, $this->taskName, $file->id);
         }

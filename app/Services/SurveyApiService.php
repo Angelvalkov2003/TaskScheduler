@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Support\Facades\Storage;
 
 class SurveyApiService
 {
@@ -116,5 +117,21 @@ class SurveyApiService
                 ]);
 
         return $this->handleResponse($response);
+    }
+
+    public function getTaskDataSaved(string $taskId, string $format): string
+    {
+
+        $url = "{$this->baseUrl}/api/v1/status/content?id={$taskId}";
+        $filepath = "survey_{$taskId}.{$format}";
+        $fullPath = Storage::disk('survey_data')->path($filepath);
+
+        Http::withHeaders([
+            'x-apikey' => $this->apiKey,
+        ])->sink($fullPath)->get($url);
+
+        return $fullPath;
+
+
     }
 }

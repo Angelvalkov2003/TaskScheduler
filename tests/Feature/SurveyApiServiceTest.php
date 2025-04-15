@@ -70,13 +70,73 @@ public function it_fetches_real_survey_layouts()
 }
 */
 
+    /*
+        #[Test]
+        public function async_it_fetches_real_survey_data()
+        {
+            $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
+
+            $format = 'csv';
+            $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', $format);
+            $taskId = $task['ident'] ?? null;
+
+            if (!$taskId) {
+                $this->fail('Failed to start async task, no task ID received.');
+            }
+
+            $maxAttempts = 30;
+            $attempts = 0;
+            $startTime = microtime(true);
+
+            do {
+                usleep(100_000); // 0.1 sec
+                $status = $service->getTaskStatus($taskId);
+                $attempts++;
+
+                if ($attempts >= $maxAttempts) {
+                    $this->fail("Timeout: Async task $taskId took too long to finish.");
+                }
+
+            } while ($status !== 'finished');
+
+            $endTime = microtime(true);
+            $elapsedTime = round(($endTime - $startTime) * 1000, 2);
+
+            echo "\nTask {$taskId} completed in {$elapsedTime} ms.\n";
+
+            // Get the result
+            $fileData = $service->getTaskResult($taskId);
+
+            // Decide on file extension
+            if ($format === 'fwu') {
+                $fileExtension = 'txt';
+            } elseif (strpos($fileData, 'PK') === 0) {
+                $fileExtension = 'zip'; // archived file
+            } else {
+                $fileExtension = 'csv'; // fallback
+            }
+
+            $filePath = "survey_{$taskId}.{$fileExtension}";
+
+            // Записваме файла
+            Storage::disk('survey_data')->put($filePath, $fileData);
+
+            if (Storage::disk('survey_data')->exists($filePath)) {
+                echo "\nFile saved successfully: $filePath\n";
+            } else {
+                $this->fail("Failed to save file.");
+            }
+
+            dd($fileData);
+        }*/
+
 
     #[Test]
-    public function async_it_fetches_real_survey_data()
+    public function async_it_downloads_data()
     {
         $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
 
-        $format = 'spss16';
+        $format = 'fwu';
         $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', $format);
         $taskId = $task['ident'] ?? null;
 
@@ -101,34 +161,23 @@ public function it_fetches_real_survey_layouts()
 
         $endTime = microtime(true);
         $elapsedTime = round(($endTime - $startTime) * 1000, 2);
-
         echo "\nTask {$taskId} completed in {$elapsedTime} ms.\n";
 
-        // Get the result
-        $fileData = $service->getTaskResult($taskId);
+        // Download the file using sink()
+        $savedFilePath = $service->getTaskDataSaved($taskId, $format);
+        $filename = basename($savedFilePath);
 
-        // Decide on file extension
-        if ($format === 'fwu') {
-            $fileExtension = 'txt';
-        } elseif (strpos($fileData, 'PK') === 0) {
-            $fileExtension = 'zip'; // archived file
-        } else {
-            $fileExtension = 'csv'; // fallback
-        }
-
-        $filePath = "survey_{$taskId}.{$fileExtension}";
-
-        // Записваме файла
-        Storage::disk('survey_data')->put($filePath, $fileData);
-
-        if (Storage::disk('survey_data')->exists($filePath)) {
-            echo "\nFile saved successfully: $filePath\n";
+        if (Storage::disk('survey_data')->exists($filename)) {
+            echo "\nFile saved successfully: {$savedFilePath}\n";
         } else {
             $this->fail("Failed to save file.");
         }
 
-        dd($fileData);
+        // Optionally: check size or content
+        $fileSize = Storage::disk('survey_data')->size($filename);
+        echo "\nDownloaded file size: {$fileSize} bytes\n";
     }
+
 
 
 
