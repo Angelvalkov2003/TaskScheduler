@@ -21,7 +21,7 @@ class DecipherExportController extends Controller
         return view('decipherExport.createDecipherTask');
     }
 
-    public function store(StoreDecipherExportRequest $request)
+    public function store(Request $request)
     {
         try {
             // Format the server and the path
@@ -95,7 +95,7 @@ class DecipherExportController extends Controller
     /**
      * Update the specified decipher export in storage.
      */
-    public function update(StoreDecipherExportRequest $request, Task $task)
+    public function update(Request $request, Task $task)
     {
         try {
             // Format the server and the path

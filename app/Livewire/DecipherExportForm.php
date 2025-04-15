@@ -10,6 +10,7 @@ use App\Models\TaskSetting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Cron\CronExpression;
+use App\Http\Requests\StoreDecipherExportRequest;
 
 class DecipherExportForm extends Component
 {
@@ -97,12 +98,8 @@ class DecipherExportForm extends Component
 
     public function store()
     {
-        if (!$this->isValidated) {
-            $this->errorMessage = 'Please validate the survey link before submitting the form.';
-            return;
-        }
-
-        $this->validate([
+        // Validate using the rules from StoreDecipherExportRequest
+        $validated = $this->validate([
             'name' => 'required|string|max:255',
             'startDate' => 'required|date',
             'endDate' => 'nullable|date|after_or_equal:startDate',
@@ -132,6 +129,11 @@ class DecipherExportForm extends Component
                 }
             ],
         ]);
+
+        if (!$this->isValidated) {
+            $this->errorMessage = 'Please validate the survey link before submitting the form.';
+            return;
+        }
 
         try {
             // Format the server and the path

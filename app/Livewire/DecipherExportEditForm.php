@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Cron\CronExpression;
 use App\Enums\ExportFormat;
+use App\Http\Requests\StoreDecipherExportRequest;
 
 class DecipherExportEditForm extends Component
 {
@@ -35,30 +36,30 @@ class DecipherExportEditForm extends Component
     public function mount(Task $task)
     {
         $this->task = $task;
-        
+
         // Get task settings
         $settings = TaskSetting::where('task_id', $task->id)->get();
         $this->taskSettings = [];
-        
+
         foreach ($settings as $setting) {
             $this->taskSettings[$setting->key] = $setting->value;
         }
-        
+
         // Set form values from task
         $this->name = $task->name;
         $this->repeat = $task->repeat;
         $this->startDate = $task->start_date->format('Y-m-d\TH:i');
         $this->endDate = $task->end_date->format('Y-m-d\TH:i');
-        
+
         // Set form values from task settings
         $this->format = $this->taskSettings['format'] ?? 'csv';
         $this->layout = $this->taskSettings['layout'] ?? 'standard';
         $this->condition = $this->taskSettings['condition'] ?? 'qualified';
         $this->emails = $this->taskSettings['emails'] ?? '';
-        
+
         // Construct survey path
         $this->surveyPath = ($this->taskSettings['server'] ?? '') . '/survey/' . ($this->taskSettings['survey_path'] ?? '');
-        
+
         // Validate the survey path on mount
         $this->validateSurveyPath();
     }
@@ -70,7 +71,7 @@ class DecipherExportEditForm extends Component
         $this->validate([
             'surveyPath' => 'required|url',
         ]);
-        
+
         // Debounce the validation to avoid too many requests
         $this->validateSurveyPath();
     }
@@ -111,7 +112,7 @@ class DecipherExportEditForm extends Component
 
             // Get available layouts
             $this->layouts = $service->getSurveyLayouts($surveyPath);
-            
+
             $this->successMessage = 'Survey link is valid. Available layouts loaded.';
             $this->isValidated = true;
         } catch (\Exception $e) {
@@ -125,12 +126,8 @@ class DecipherExportEditForm extends Component
 
     public function update()
     {
-        if (!$this->isValidated) {
-            $this->errorMessage = 'Please validate the survey link before submitting the form.';
-            return;
-        }
-
-        $this->validate([
+        // Validate using the rules from StoreDecipherExportRequest
+        $validated = $this->validate([
             'name' => 'required|string|max:255',
             'startDate' => 'required|date',
             'endDate' => 'nullable|date|after_or_equal:startDate',
@@ -161,6 +158,11 @@ class DecipherExportEditForm extends Component
             ],
         ]);
 
+        if (!$this->isValidated) {
+            $this->errorMessage = 'Please validate the survey link before submitting the form.';
+            return;
+        }
+
         try {
             // Format the server and the path
             $parsedUrl = parse_url($this->surveyPath);
@@ -174,7 +176,7 @@ class DecipherExportEditForm extends Component
                 'start_date' => $this->startDate,
                 'end_date' => $this->endDate,
             ]);
-            
+
             // Update task settings
             $settingsToUpdate = [
                 'server' => $server,
@@ -184,14 +186,14 @@ class DecipherExportEditForm extends Component
                 'condition' => $this->condition,
                 'emails' => $this->emails,
             ];
-            
+
             foreach ($settingsToUpdate as $key => $value) {
                 TaskSetting::updateOrCreate(
                     ['task_id' => $this->task->id, 'key' => $key],
-                    ['value' => $value]
+                    ['value' => is_array($value) ? json_encode($value) : $value]
                 );
             }
-            
+
             session()->flash('success', 'Task updated successfully!');
             return redirect()->route('decipherExport.view', $this->task);
         } catch (\Exception $e) {
@@ -204,4 +206,4 @@ class DecipherExportEditForm extends Component
     {
         return view('livewire.decipher-export-edit-form');
     }
-} 
+}
