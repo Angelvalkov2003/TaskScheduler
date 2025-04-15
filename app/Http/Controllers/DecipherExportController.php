@@ -94,15 +94,7 @@ class DecipherExportController extends Controller
      */
     public function edit(Task $task)
     {
-        // Get task settings
-        $settings = TaskSetting::where('task_id', $task->id)->get();
-        $taskSettings = [];
-        
-        foreach ($settings as $setting) {
-            $taskSettings[$setting->key] = $setting->value;
-        }
-        
-        return view('decipherExport.editDecipherTask', compact('task', 'taskSettings'));
+        return view('decipherExport.editDecipherTask', compact('task'));
     }
 
     /**
