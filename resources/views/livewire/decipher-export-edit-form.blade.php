@@ -34,8 +34,7 @@
             @error('surveyPath') <div class="invalid-feedback">{{ $message }}</div> @enderror
             @if($errorMessage)
                 <div class="text-danger mt-1">{{ $errorMessage }}</div>
-            @endif
-            @if($successMessage)
+            @elseif($successMessage)
                 <div class="text-success mt-1">{{ $successMessage }}</div>
             @endif
         </div>

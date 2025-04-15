@@ -39,6 +39,7 @@ class DecipherExportForm extends Component
     public function updatedSurveyPath()
     {
         $this->isValidated = false;
+        $this->successMessage = '';
         $this->validate([
             'surveyPath' => 'required|url',
         ]);
@@ -55,6 +56,7 @@ class DecipherExportForm extends Component
 
         $this->isLoading = true;
         $this->errorMessage = '';
+        $this->successMessage = '';
         $this->layouts = [];
         $this->isValidated = false;
 
@@ -88,6 +90,7 @@ class DecipherExportForm extends Component
         } catch (\Exception $e) {
             Log::error('Error validating survey path: ' . $e->getMessage());
             $this->errorMessage = 'Error validating survey link: ' . $e->getMessage();
+            $this->successMessage = '';
         } finally {
             $this->isLoading = false;
         }
