@@ -1,4 +1,3 @@
-
 <div>
     <form wire:submit="store">
         @csrf
@@ -8,18 +7,36 @@
             <div class="input-group">
                 <input 
                     class="form-control @error('surveyPath') is-invalid @enderror" 
-                    wire:model.live="surveyPath" 
-                    wire:change="validateSurveyPath"
+                    wire:model.live.debounce.500ms="surveyPath" 
                     placeholder="Please input the survey path..." 
                     required
                 />
-                <button type="button" class="btn btn-outline-secondary" wire:click="validateSurveyPath" wire:loading.attr="disabled">
-                    <span wire:loading.remove wire:target="validateSurveyPath">Validate</span>
-                    <span wire:loading wire:target="validateSurveyPath">
+                <span class="input-group-text">
+                    <span wire:loading wire:target="surveyPath">
                         <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        Validating...
                     </span>
-                </button>
+                    <span wire:loading.remove wire:target="surveyPath">
+                        @if($isValidated)
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-success" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M5 12l5 5l10 -10"></path>
+                            </svg>
+                        @elseif($errorMessage)
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-danger" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M12 9v2m0 4v.01"></path>
+                                <path d="M5 19h14a2 2 0 0 0 1.84 -2.75l-7.1 -12.25a2 2 0 0 0 -3.5 0l-7.1 12.25a2 2 0 0 0 1.75 2.75"></path>
+                            </svg>
+                        @else
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon text-muted" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                                <path d="M12 8l.01 0"></path>
+                                <path d="M11 12l1 0l0 4l1 0"></path>
+                            </svg>
+                        @endif
+                    </span>
+                </span>
             </div>
             @error('surveyPath') <div class="invalid-feedback">{{ $message }}</div> @enderror
             
@@ -168,7 +185,9 @@
         </div>
 
         <div class="text-end">
-            <button type="submit" class="btn btn-primary">Save the Decipher Auto Export</button>
+            <button type="submit" class="btn btn-primary" @if(!$isValidated) disabled @endif>
+                Save the Decipher Auto Export
+            </button>
         </div>
     </form>
 </div>

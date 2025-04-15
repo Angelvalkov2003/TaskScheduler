@@ -27,6 +27,7 @@ class DecipherExportForm extends Component
     public $errorMessage = '';
     public $successMessage = '';
     public $apiKey = '';
+    public $isValidated = false;
 
     public function mount()
     {
@@ -35,15 +36,27 @@ class DecipherExportForm extends Component
         $this->endDate = now()->addMonth()->format('Y-m-d\TH:i');
     }
 
-    public function validateSurveyPath()
+    public function updatedSurveyPath()
     {
+        $this->isValidated = false;
         $this->validate([
             'surveyPath' => 'required|url',
         ]);
+        
+        // Debounce the validation to avoid too many requests
+        $this->validateSurveyPath();
+    }
+
+    public function validateSurveyPath()
+    {
+        if (empty($this->surveyPath)) {
+            return;
+        }
 
         $this->isLoading = true;
         $this->errorMessage = '';
         $this->layouts = [];
+        $this->isValidated = false;
 
         try {
             // Parse the URL to get server and path
@@ -71,6 +84,7 @@ class DecipherExportForm extends Component
             $this->layouts = $service->getSurveyLayouts($surveyPath);
             
             $this->successMessage = 'Survey link is valid. Available layouts loaded.';
+            $this->isValidated = true;
         } catch (\Exception $e) {
             Log::error('Error validating survey path: ' . $e->getMessage());
             $this->errorMessage = 'Error validating survey link: ' . $e->getMessage();
@@ -81,6 +95,11 @@ class DecipherExportForm extends Component
 
     public function store()
     {
+        if (!$this->isValidated) {
+            $this->errorMessage = 'Please validate the survey link before submitting the form.';
+            return;
+        }
+
         $this->validate([
             'name' => 'required|string|max:255',
             'startDate' => 'required|date',
