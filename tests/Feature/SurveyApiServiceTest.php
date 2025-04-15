@@ -137,7 +137,7 @@ public function it_fetches_real_survey_layouts()
         $service = new SurveyApiService($this->baseUrl, $this->validApiKey);
 
         $format = 'fwu';
-        $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', $format);
+        $task = $service->startAsyncSurveyDataExport('bor/training/v3/avalkov/JustEat', $format, '20309');
         $taskId = $task['ident'] ?? null;
 
         if (!$taskId) {

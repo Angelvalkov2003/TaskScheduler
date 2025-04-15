@@ -53,7 +53,7 @@ class Task extends Model
     }
 
     /**
-     * Start task execution by getting settings, API key, and dispatching the job
+     * Start task execution by getting settings, API key, and dispatching the job.
      * 
      * @param int|null $userId Optional user ID to use for API key lookup (defaults to task creator)
      * @return array Result with success status and message
@@ -72,7 +72,12 @@ class Task extends Model
         $surveyPath = $settingsMap['survey_path'] ?? '';
         $server = $settingsMap['server'] ?? '';
         $format = $settingsMap['format'] ?? 'json';
-        $emailRecievers = $settingsMap['emails'] ?? '';
+        $emailRecipients = $settingsMap['emails'] ?? '';
+        $layout = $settingsMap['layout'] ?? '';
+
+        // Convert 'standard' layout to empty string
+        $layout = $layout === 'standard' ? '' : $layout;
+
         $taskName = $this->name;
 
         // Validate required settings
@@ -101,7 +106,7 @@ class Task extends Model
         // Start the async task and get the ident
         Log::info("Starting async task for task ID {$this->id}, Survey Path: {$surveyPath}, Format: {$format}, Server: {$server}");
         $service = new SurveyApiService($server, $apiKey);
-        $taskResponse = $service->startAsyncSurveyDataExport($surveyPath, $format);
+        $taskResponse = $service->startAsyncSurveyDataExport($surveyPath, $format, $layout);
         $ident = $taskResponse['ident'] ?? null;
 
         if (!$ident) {
@@ -120,7 +125,7 @@ class Task extends Model
             $server,
             $apiKey,
             $format,
-            $emailRecievers,
+            $emailRecipients,
             $taskName,
             $this->id
         );
