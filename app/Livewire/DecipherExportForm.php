@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Cron\CronExpression;
 use App\Http\Requests\StoreDecipherExportRequest;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class DecipherExportForm extends Component
 {
@@ -41,11 +43,13 @@ class DecipherExportForm extends Component
     {
         $this->isValidated = false;
         $this->successMessage = '';
-        $this->validate([
-            'surveyPath' => 'required|url',
-        ]);
+        $this->resetErrorBag('surveyPath'); // Clear previous validation error
 
-        // Debounce the validation to avoid too many requests
+        if (!filter_var($this->surveyPath, FILTER_VALIDATE_URL)) {
+            $this->addError('surveyPath', 'The survey path must be a valid URL.');
+            return;
+        }
+
         $this->validateSurveyPath();
     }
 
@@ -98,50 +102,47 @@ class DecipherExportForm extends Component
 
     public function store()
     {
-        // Validate using the rules from StoreDecipherExportRequest
-        $validated = $this->validate([
-            'name' => 'required|string|max:255',
-            'startDate' => 'required|date',
-            'endDate' => 'nullable|date|after_or_equal:startDate',
-            'repeat' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) {
-                    if (!CronExpression::isValidExpression($value)) {
-                        $fail('The repeat field must be a valid CRON expression.');
-                    }
-                }
-            ],
-            'surveyPath' => 'required|url',
-            'format' => 'required|string',
-            'layout' => 'nullable|string',
-            'condition' => 'nullable|string',
-            'emails' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) {
-                    $emails = array_map('trim', explode(',', $value));
-                    foreach ($emails as $email) {
-                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                            $fail('Invalid email: ' . $email);
-                        }
-                    }
-                }
-            ],
-        ]);
-
         if (!$this->isValidated) {
-            $this->errorMessage = 'Please validate the survey link before submitting the form.';
+            $this->addError('surveyPath', 'Please validate the survey link before submitting the form.');
+            return;
+        }
+
+        // Map component properties to validation field names
+        $data = [
+            'name' => $this->name,
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+            'repeat' => $this->repeat,
+            'survey_path' => $this->surveyPath,
+            'format' => $this->format,
+            'layout' => $this->layout,
+            'condition' => $this->condition,
+            'emails' => $this->emails,
+        ];
+
+        // Validate dates separately first
+        if (strtotime($this->endDate) < strtotime($this->startDate)) {
+            $this->addError('endDate', 'The end date must be after or equal to the start date.');
+            return;
+        }
+
+        $request = new StoreDecipherExportRequest();
+        $validator = Validator::make($data, $request->rules(), $request->messages());
+
+        if ($validator->fails()) {
+            $this->handleValidationErrors($validator);
             return;
         }
 
         try {
-            // Format the server and the path
             $parsedUrl = parse_url($this->surveyPath);
-            $server = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
-            $surveyPath = ltrim($parsedUrl['path'], '/survey/');
+            if (!$parsedUrl || !isset($parsedUrl['scheme'], $parsedUrl['host'], $parsedUrl['path'])) {
+                throw new \Exception('Invalid survey URL format.');
+            }
 
-            // Set up task data
+            $server = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
+            $surveyPath = Str::after($parsedUrl['path'], '/survey/');
+
             $taskData = [
                 'name' => $this->name,
                 'start_date' => $this->startDate,
@@ -154,7 +155,6 @@ class DecipherExportForm extends Component
 
             $task = Task::create($taskData);
 
-            // Set up task_settings data
             $extraData = [
                 'format' => $this->format,
                 'layout' => $this->layout,
@@ -176,7 +176,23 @@ class DecipherExportForm extends Component
             return redirect()->route('decipherExport.view', $task);
         } catch (\Exception $e) {
             Log::error('Error creating task: ' . $e->getMessage());
-            $this->errorMessage = 'An error occurred: ' . $e->getMessage();
+            $this->addError('general', 'An error occurred: ' . $e->getMessage());
+        }
+    }
+
+    protected function handleValidationErrors($validator)
+    {
+        foreach ($validator->errors()->toArray() as $field => $messages) {
+            foreach ($messages as $message) {
+                // Map the validation field names back to component property names
+                $componentField = match($field) {
+                    'start_date' => 'startDate',
+                    'end_date' => 'endDate',
+                    'survey_path' => 'surveyPath',
+                    default => $field
+                };
+                $this->addError($componentField, $message);
+            }
         }
     }
 
