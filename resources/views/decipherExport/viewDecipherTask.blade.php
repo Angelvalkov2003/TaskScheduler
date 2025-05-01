@@ -64,7 +64,7 @@
                     @if(isset($taskSettings['layout']))
                     <div class="datagrid-item">
                         <div class="datagrid-title">Layout</div>
-                        <div class="datagrid-content">{{ $taskSettings['layout'] }}</div>
+                        <div class="datagrid-content">(#{{ $taskSettings['layout'] }}) Layout Description Here TODO</div>
                     </div>
                     @endif
                     @if(isset($taskSettings['condition']))

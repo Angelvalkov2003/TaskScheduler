@@ -25,8 +25,8 @@ class TaskController extends Controller
     }
     public function force(Task $task)
     {
-        $result = $task->startTaskExecution(Auth::id());
-        
+        $result = $task->startTaskExecution();
+
         if ($result['success']) {
             return redirect()->route('tasks.index')
                 ->with('success', 'Task has been queued to run immediately.');

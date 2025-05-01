@@ -78,7 +78,7 @@
 
                                             <option value="standard">Standard</option>
                                             @foreach($layouts as $layout)
-                                                <option value="{{ $layout['id'] }}">{{ $layout['description'] }}</option>
+                                                <option value="{{ $layout['id'] }}">(#{{ $layout['id'] }}) {{ $layout['description'] }}</option>
                                             @endforeach
 
                                         </select>

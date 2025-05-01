@@ -58,7 +58,7 @@ class Task extends Model
      * @param int|null $userId Optional user ID to use for API key lookup (defaults to task creator)
      * @return array Result with success status and message
      */
-    public function startTaskExecution(?int $userId = null): array
+    public function startTaskExecution(): array
     {
         // Get task settings
         $settings = TaskSetting::where('task_id', $this->id)->get();
@@ -89,8 +89,7 @@ class Task extends Model
         }
 
         // Get API key
-        $userId = $userId ?? $this->created_by;
-        $apiKeyEntry = Key::where('user_id', $userId)
+        $apiKeyEntry = Key::where('user_id', $this->created_by)
             ->where('host', $server)
             ->first();
 
