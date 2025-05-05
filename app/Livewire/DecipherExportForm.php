@@ -31,6 +31,8 @@ class DecipherExportForm extends Component
     public $successMessage = '';
     public $apiKey = '';
     public $isValidated = false;
+    public $serverUrl = '';
+    public $newApiKey = '';
 
     public function mount()
     {
@@ -50,6 +52,14 @@ class DecipherExportForm extends Component
             return;
         }
 
+        // Extract server URL
+        $parsedUrl = parse_url($this->surveyPath);
+        if (!$parsedUrl || !isset($parsedUrl['scheme'], $parsedUrl['host'])) {
+            $this->addError('surveyPath', 'Invalid URL format.');
+            return;
+        }
+
+        $this->serverUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
         $this->validateSurveyPath();
     }
 
@@ -77,7 +87,8 @@ class DecipherExportForm extends Component
                 ->first();
 
             if (!$key) {
-                $this->errorMessage = 'No API key found for this server. Please add an API key in your settings.';
+                $this->errorMessage = 'No API key found for this server. Please add an API key.';
+                $this->dispatch('showApiKeyModal');
                 $this->isLoading = false;
                 return;
             }
@@ -97,6 +108,40 @@ class DecipherExportForm extends Component
             $this->successMessage = '';
         } finally {
             $this->isLoading = false;
+        }
+    }
+
+    public function saveApiKey()
+    {
+        $this->validate([
+            'newApiKey' => 'required|string',
+            'serverUrl' => 'required|url'
+        ]);
+
+        try {
+            // Create or update the API key
+            Key::updateOrCreate(
+                [
+                    'user_id' => Auth::id(),
+                    'host' => $this->serverUrl
+                ],
+                [
+                    'value' => $this->newApiKey
+                ]
+            );
+
+            $this->dispatch('hideApiKeyModal');
+            $this->newApiKey = '';
+            
+            // Clear any previous error messages
+            $this->errorMessage = '';
+            $this->successMessage = 'API key saved successfully.';
+            
+            // Revalidate the survey path with the new API key
+            $this->validateSurveyPath();
+        } catch (\Exception $e) {
+            Log::error('Failed to save API key: ' . $e->getMessage());
+            $this->addError('newApiKey', 'Failed to save API key: ' . $e->getMessage());
         }
     }
 

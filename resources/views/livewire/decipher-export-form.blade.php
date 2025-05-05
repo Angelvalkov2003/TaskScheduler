@@ -39,6 +39,33 @@
             @endif
         </div>
 
+        <!-- API Key Modal -->
+        <div class="modal fade" id="apiKeyModal" tabindex="-1" wire:ignore.self>
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add API Key</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Server:</label>
+                            <input type="text" class="form-control" wire:model="serverUrl" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">API Key:</label>
+                            <input type="text" class="form-control @error('newApiKey') is-invalid @enderror" wire:model="newApiKey" required>
+                            @error('newApiKey') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-primary" wire:click="saveApiKey">Save API Key</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="page-wrapper">
             <div class="page-body">
                 <div class="container-xl">
@@ -173,3 +200,19 @@
         </div>
     </form>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('livewire:initialized', () => {
+    const apiKeyModal = new bootstrap.Modal(document.getElementById('apiKeyModal'));
+
+    Livewire.on('showApiKeyModal', () => {
+        apiKeyModal.show();
+    });
+
+    Livewire.on('hideApiKeyModal', () => {
+        apiKeyModal.hide();
+    });
+});
+</script>
+@endpush

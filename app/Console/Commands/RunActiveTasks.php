@@ -18,11 +18,26 @@ class RunActiveTasks extends Command
 
     public function handle()
     {
-        // Взима всички активни задачи
+        // Get all tasks that are currently active
         $tasks = Task::where('is_active', true)->get();
+        $now = now();
 
         foreach ($tasks as $task) {
             try {
+                // Check if task is outside its date range
+                if ($task->start_date && $now->lt($task->start_date)) {
+                    $task->update(['is_active' => false]);
+                    $this->info("Task ID {$task->id} deactivated: Start date not reached");
+                    continue;
+                }
+
+                if ($task->end_date && $now->gt($task->end_date)) {
+                    $task->update(['is_active' => false]);
+                    $this->info("Task ID {$task->id} deactivated: End date passed");
+                    continue;
+                }
+
+                // If task is within date range, check if it's due to run
                 $cron = new CronExpression($task->repeat);
                 if ($cron->isDue()) {
                     $result = $task->startTaskExecution();
