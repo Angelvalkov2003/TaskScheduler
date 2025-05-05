@@ -24,6 +24,15 @@ Route::middleware(['auth'])->group(function () {
         return view('auth.profile', ['user' => Auth::user()]);
     })->name('profile');
     
+    Route::get('/profile/edit', function () {
+        return view('auth.editprofile', ['user' => Auth::user()]);
+    })->name('profile.edit');
+    
+    // Profile update routes
+    Route::put('/profile/name', [App\Http\Controllers\AuthController::class, 'updateName'])->name('profile.update.name');
+    Route::put('/profile/password', [App\Http\Controllers\AuthController::class, 'updatePassword'])->name('profile.update.password');
+    Route::put('/profile/keys', [App\Http\Controllers\AuthController::class, 'updateKeys'])->name('profile.update.keys');
+    
     // Task Routes
     Route::get('/index', [App\Http\Controllers\TaskController::class, 'index'])->name('tasks.index');
     Route::post('/tasks/{task}/force', [TaskController::class, 'force'])->name('tasks.force');

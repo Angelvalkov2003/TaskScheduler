@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -78,5 +79,58 @@ class AuthController extends Controller
         return view('auth.profile', compact('user'));
     }
 
+    public function updateName(Request $request)
+    {
+        $user = Auth::user();
+        
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
 
+        $user->name = $validated['name'];
+        $user->save();
+
+        return redirect()->route('profile.edit')->with('success', 'Name updated successfully');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user();
+        
+        $validated = $request->validate([
+            'current_password' => 'required|current_password',
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return redirect()->route('profile.edit')->with('success', 'Password updated successfully');
+    }
+
+    public function updateKeys(Request $request)
+    {
+        $user = Auth::user();
+        
+        $validated = $request->validate([
+            'keys' => 'array',
+            'keys.*.host' => 'required|string',
+            'keys.*.value' => 'required|string',
+        ]);
+
+        // Delete existing keys
+        $user->keys()->delete();
+        
+        // Create new keys
+        if (isset($validated['keys'])) {
+            foreach ($validated['keys'] as $keyData) {
+                $user->keys()->create([
+                    'host' => $keyData['host'],
+                    'value' => $keyData['value']
+                ]);
+            }
+        }
+
+        return redirect()->route('profile.edit')->with('success', 'API keys updated successfully');
+    }
 }
