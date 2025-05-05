@@ -50,7 +50,7 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Server:</label>
-                            <input type="text" class="form-control" wire:model="serverUrl" readonly>
+                            <input type="text" class="form-control" wire:model="serverUrl" disabled style="cursor: not-allowed;">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">API Key:</label>
