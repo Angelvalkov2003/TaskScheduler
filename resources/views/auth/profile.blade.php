@@ -13,6 +13,11 @@
                     </div>
                     
                     <div class="mb-3">
+                        <label class="form-label fw-bold">User's name:</label>
+                        <div class="form-control border-0 bg-transparent text-body">{{ $user->name }}</div>
+                    </div>
+                    
+                    <div class="mb-3">
                         <label class="form-label fw-bold">Teams & Roles:</label>
                         <div class="form-control border-0 bg-transparent text-body">
                             @foreach($user->teams as $team)
@@ -30,8 +35,9 @@
                         <div class="form-control border-0 bg-transparent text-body">
                             @foreach($user->keys as $key)
                                 <div>
-                                    <strong>{{ $key->host }}:</strong> {{ $key->value }}
+                                    <strong>{{ $key->host }}:</strong> {{ Str::limit($key->value, 20, '...') }}
                                 </div>
+                                <br/>
                             @endforeach
                         </div>
                     </div>

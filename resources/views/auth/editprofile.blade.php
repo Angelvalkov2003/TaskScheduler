@@ -97,7 +97,12 @@
                                     <input type="text" class="form-control @error('keys.'.$index.'.value') is-invalid @enderror" 
                                            name="keys[{{ $index }}][value]" 
                                            value="{{ $key->value }}" 
-                                           placeholder="Value">
+                                           placeholder="Value"
+                                           style="display: none;">
+                                    <input type="text" class="form-control" 
+                                           value="{{ str_repeat('*', strlen($key->value)) }}" 
+                                           placeholder="Value"
+                                           readonly>
                                     @error('keys.'.$index.'.value')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -125,37 +130,66 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Get the container and button elements
     const keysContainer = document.getElementById('keys-container');
     const addKeyButton = document.getElementById('add-key');
+    
+    if (!keysContainer || !addKeyButton) {
+        console.error('Required elements not found');
+        return;
+    }
+
     let keyCount = {{ count($user->keys) }};
 
-    addKeyButton.addEventListener('click', function() {
-        const keyEntry = document.createElement('div');
-        keyEntry.className = 'key-entry mb-3';
-        keyEntry.innerHTML = `
-            <div class="row">
-                <div class="col-md-5">
-                    <input type="text" class="form-control" 
-                           name="keys[${keyCount}][host]" 
-                           placeholder="Host">
-                </div>
-                <div class="col-md-5">
-                    <input type="text" class="form-control" 
-                           name="keys[${keyCount}][value]" 
-                           placeholder="Value">
-                </div>
-                <div class="col-md-2">
-                    <button type="button" class="btn btn-danger remove-key">Remove</button>
+    // Function to create a new key entry
+    function createKeyEntry(index) {
+        return `
+            <div class="key-entry mb-3">
+                <div class="row">
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" 
+                               name="keys[${index}][host]" 
+                               placeholder="Enter host name"
+                               required>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" class="form-control" 
+                               name="keys[${index}][value]" 
+                               placeholder="Enter key value"
+                               required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-danger remove-key">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
                 </div>
             </div>
         `;
-        keysContainer.appendChild(keyEntry);
+    }
+
+    // Add new key button click handler
+    addKeyButton.addEventListener('click', function() {
+        const keyEntry = document.createElement('div');
+        keyEntry.innerHTML = createKeyEntry(keyCount);
+        keysContainer.appendChild(keyEntry.firstElementChild);
         keyCount++;
+
+        // Focus on the new host input
+        const newHostInput = keyEntry.querySelector('input[name^="keys"][name$="[host]"]');
+        if (newHostInput) {
+            newHostInput.focus();
+        }
     });
 
+    // Remove key button click handler
     keysContainer.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-key')) {
-            e.target.closest('.key-entry').remove();
+        const removeButton = e.target.closest('.remove-key');
+        if (removeButton) {
+            const keyEntry = removeButton.closest('.key-entry');
+            if (keyEntry) {
+                keyEntry.remove();
+            }
         }
     });
 });
